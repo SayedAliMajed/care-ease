@@ -4,6 +4,7 @@ dotenv.config();
 const express = require('express');
 
 const app = express();
+app.set('view engine', 'ejs');
 
 const mongoose = require('mongoose');
 const methodOverride = require('method-override');
@@ -15,6 +16,7 @@ const passUserToView = require("./middleware/pass-user-to-view.js");
 
 // Controllers
 const authController = require('./controllers/auth.js');
+const appointmentsController = require('./controllers/appointments.js');
 
 // Set the port from environment variable or default to 3000
 const port = process.env.PORT ? process.env.PORT : '3000';
@@ -26,7 +28,7 @@ mongoose.connection.on('connected', () => {
 });
 
 // MIDDLEWARE
-//
+
 // Middleware to parse URL-encoded data from forms
 app.use(express.urlencoded({ extended: false }));
 // Middleware for using HTTP verbs such as PUT or DELETE
@@ -51,12 +53,10 @@ app.get('/', (req, res) => {
 });
 
 app.use('/auth', authController);
+app.use(isSignedIn);
+app.use('/appointments', appointmentsController);
 
 // PROTECTED
-
-app.get("/vip-lounge", isSignedIn, (req, res) => {
-    res.send(`Welcome to the party ${req.session.user.username}.`);
-});
 
 app.listen(port, () => {
   console.log(`The express app is ready on port ${port}!`);

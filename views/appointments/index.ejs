@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Appointments </title>
+</head>
+<body>
+    <h1> Your Appointments List </h1>
+      <ul class="appointments-list">
+        <% if (appointments && appointments.length > 0) { %>
+        <% appointments.forEach((appointment) => { %>
+         <li>
+             <a href="/appointments/<%= appointment._id %>"><%= appointment.date %></a>
+             <a href="/appointments/<%= appointment._id %>/edit">Edit</a>
+        </li>
+        <% }) %>
+        <% } else { %>
+    <p>You have not created any appointments yet.</p>
+  <% } %>
+</ul>
+</body>
+</html>
