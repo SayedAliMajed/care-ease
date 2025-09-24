@@ -61,3 +61,45 @@ This application is intended for **local deployment** in development environment
 
 To get started:
 
+git clone https://github.com/SayedAliMajed/care-ease.git
+cd careease
+npm install
+
+Create a .env file with your MongoDB URI and session secret
+npm start
+
+Open your browser and visit `http://localhost:3000`
+
+---
+
+### 🎨 Design Features
+
+- Consistent color palette reflecting health and wellness
+- Accessible UI with alt text and focus handling
+- Button styles and form validation throughout the site
+
+---
+
+### 📁 Project Structure
+
+- `/models` – Mongoose schemas
+- `/controllers` – Application logic
+- `/views` – EJS templates
+- `/public` – Static files (CSS, JS, images)
+- `/middleware` – Authentication & validation layers
+
+---
+
+### 🌱 Next Steps
+
+- Implement email notifications for appointments
+- Add calendar synchronization features
+- Expand patient history detail views
+- Optimize for mobile-first experience
+
+---
+
+Thank you for exploring CareEase!
+
+---
+
