@@ -1,23 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Appointments </title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Appointments</title>
 </head>
 <body>
-    <h1> Your Appointments List </h1>
-      <ul class="appointments-list">
-        <% if (appointments && appointments.length > 0) { %>
-        <% appointments.forEach((appointment) => { %>
-         <li>
-             <a href="/appointments/<%= appointment._id %>"><%= appointment.date %></a>
-             <a href="/appointments/<%= appointment._id %>/edit">Edit</a>
+  <%- include('../partials/_navbar.ejs') %>
+  <h1>Your Appointments List</h1>
+  <ul class="appointments-list">
+    <% if (appointments && appointments.length > 0) { %>
+      <% appointments.forEach((appointment) => { %>
+        <li>
+          <a href="/appointments/<%= appointment._id %>">
+            <%= new Date(appointment.date).toLocaleDateString() %>
+            <% if (appointment.time) { %> - <%= appointment.time %> <% } %>
+            <% if (appointment.status) { %> (<%= appointment.status %>) <% } %>
+          </a>
+          <a href="/appointments/<%= appointment._id %>/edit">Edit</a>
         </li>
-        <% }) %>
-        <% } else { %>
-    <p>You have not created any appointments yet.</p>
-  <% } %>
-</ul>
+      <% }) %>
+    <% } else { %>
+      <p>You have not created any appointments yet.</p>
+    <% } %>
+  </ul>
 </body>
 </html>
