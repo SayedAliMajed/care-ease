@@ -15,6 +15,16 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.get('/new', async (req,res) => {
+  try {
+    res.render('appointments/new')
+
+  } catch (error) {
+    console.log(error);
+    res.redirect('/');
+
+  }
+})
 
 
 
