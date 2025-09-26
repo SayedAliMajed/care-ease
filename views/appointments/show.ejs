@@ -20,9 +20,10 @@
     <p><strong>Doctor Comments:</strong> <%= appointment.doctorComments || 'No comments' %></p>
   <% } %>
 
-  <p><strong>Notes:</strong> <%= appointment.notes || 'No additional notes' %></p>
-
-  <a href="/appointments/<%= appointment._id %>/edit">Edit</a> |
+  <form action="/appointments/<%= appointment._id%>?_method=DELETE" method="post">
+    <button type="submit"> Delete this appointment</button>
+  </form>  
+  <a href="/appointments/<%= appointment._id %>/edit">Edit</a> 
   <a href="/appointments">Back to List</a>
 </body>
 </html>
