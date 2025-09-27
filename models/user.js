@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
@@ -12,23 +13,22 @@ const userSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    require: true,
-    unique:true,
+    required: true,   
+    unique: true,
   },
   role: {
     type: String,
-    require: true,
-    enum: ['patient', 'doctor', 'employee','admin'],
+    required: true,   
+    enum: ['patient', 'doctor', 'employee', 'admin'],
   },
   profile: {
     fullName: String,
     phone: String,
     address: String,
     department: String, // only for employee
-    specialty: String, // only for doctor
+    specialty: String,  // only for doctor
   },
-  
-});
+}, { timestamps: true }); 
 
 const User = mongoose.model('User', userSchema);
 

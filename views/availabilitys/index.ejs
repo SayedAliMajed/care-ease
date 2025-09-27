@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Availability Date </title>
+</head>
+<body>
+  <%- include('../partials/_navbar.ejs') %>
+  <h1>Availabilitys List</h1>
+  <ul class="availabilitys-list">
+    <% if (availabilitys && availabilitys.length > 0) { %>
+      <% availabilitys.forEach((availability) => { %>
+        <li>
+          <a href="/availabilitys/<%= availability._id %>">
+            <%= new Date(availability.date).toLocaleDateString() %>
+            <% if (availabilitys.time) { %> - <%= availabilitys.time %> <% } %>
+            <% if (availabilitys.status) { %> (<%= availabilitys.status %>) <% } %>
+          </a>
+          <a href="/availabilitys/<%= availability._id %>/edit">Edit</a>
+        </li>
+      <% }) %>
+    <% } else { %>
+      <p>You have not created any availabilitys yet.</p>
+    <% } %>
+  </ul>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Availabilitys Date</title>
+</head>
+<body>
+    <%- include('../partials/_navbar.ejs') %>
+    <h1>Add a new availability</h1>
+    <form action="/availabilitys" method="POST">
+        <label for="availabilityDate">Date</label>
+        <input type="date" id="availabilitDate" name="availabilitDate" required>
+
+        <label for="availabilityTime">Time</label>
+        <input type="time" id="availabilityTime" name="availabilityTime" required>
+
+        <button type="submit">Add availability</button>
+    </form>
+</body>
+</html>
