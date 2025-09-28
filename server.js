@@ -18,6 +18,7 @@ const passUserToView = require("./middleware/pass-user-to-view.js");
 const authController = require('./controllers/auth.js');
 const appointmentsController = require('./controllers/appointments.js');
 const availabilitysController = require('./controllers/availabilitys.js');
+const adminController = require('./controllers/admin.js');
 
 // Set the port from environment variable or default to 3000
 const port = process.env.PORT ? process.env.PORT : '3000';
@@ -54,6 +55,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/auth', authController);
+app.use('/admin', adminController);
 app.use(isSignedIn);
 app.use('/appointments', appointmentsController);
 app.use('/availabilitys', availabilitysController);
