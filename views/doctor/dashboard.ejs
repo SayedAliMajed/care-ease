@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Doctor Dashboard</title>
+</head>
+<body>
+  <h1>Welcome to the Doctor Dashboard</h1>
+  <p>Hello, <strong><%= user.profile?.fullName || user.username %></strong>!</p>
+  <p>Here you can view patients, appointments, and manage your schedule.</p>
+
+  <nav>
+    <ul>
+      <li><a href="/doctor/patients">My Patients</a></li>
+      <li><a href="/doctor/appointments">Appointments</a></li>
+      <li><a href="/profile">My Profile</a></li>
+      <li><a href="/logout">Logout</a></li>
+    </ul>
+  </nav>
+</body>
+</html>

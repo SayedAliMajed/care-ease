@@ -73,8 +73,17 @@ router.post('/sign-in', async (req, res) => {
     };
 
     req.session.save(() => {
-      res.redirect('/');
-    });
+  if (userInDatabase.role === 'admin') {
+    res.redirect('/admin/dashboard');
+  } else if (userInDatabase.role === 'employee') {
+    res.redirect('/employee/dashboard');
+  } else if (userInDatabase.role === 'doctor') {
+    res.redirect('/doctor/dashboard');
+  } else {
+    res.redirect('/');
+  }
+});
+
   } catch (error) {
     console.error(error);
     res.send('Error during sign in');

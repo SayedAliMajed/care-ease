@@ -55,7 +55,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/auth', authController);
-app.use('/admin', adminController);
+app.use(require('./controllers/admin'));
 app.use(isSignedIn);
 app.use('/appointments', appointmentsController);
 app.use('/availabilitys', availabilitysController);
