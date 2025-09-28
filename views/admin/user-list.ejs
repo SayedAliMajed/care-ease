@@ -1,11 +1,37 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <title>User List</title>
 </head>
 <body>
-    <h1> Users list </h1>
+  <h1>Existing Users</h1>
+  <table border="1" cellpadding="8" cellspacing="0">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Full Name</th>
+        <th>Phone</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% users.forEach(user => { %>
+        <tr>
+          <td><%= user.username %></td>
+          <td><%= user.email %></td>
+          <td><%= user.role %></td>
+          <td><%= user.profile.fullName || '-' %></td>
+          <td><%= user.profile.phone || '-' %></td>
+          <td>
+            <!-- Add Edit/Delete actions URL as per your routing -->
+            <a href="/admin/edit-user/<%= user._id %>">Edit</a> | 
+            <a href="/admin/delete-user/<%= user._id %>" onclick="return confirm('Delete this user?');">Delete</a>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
 </body>
 </html>
