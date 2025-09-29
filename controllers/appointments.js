@@ -35,7 +35,7 @@ router.post('/', async (req,res) => {
     }
     req.body.patient_id = req.session.user._id;
     if (req.session.user.role === 'patient') {
-      req.body.duration = 30;
+      req.body.duration = 20;
       req.body.prescription = '';
     }
     await Appointment.create(req.body);

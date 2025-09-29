@@ -26,4 +26,5 @@ const availabilitySchema = new mongoose.Schema({
 }, { timestamps: true });  
 
 const Availability = mongoose.model('Availability', availabilitySchema);
+
 module.exports = Availability;

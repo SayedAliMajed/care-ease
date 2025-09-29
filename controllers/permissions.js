@@ -12,6 +12,7 @@ const permissions = {
   admin: {
     appointments: ['create', 'read', 'update', 'delete'],
     users: ['create', 'read', 'update', 'delete'],
+    availabilitys: ['create', 'read', 'update', 'delete'],
   },
 };
 
