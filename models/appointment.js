@@ -21,6 +21,17 @@ const appointmentSchema = new mongoose.Schema({
   prescription: {
     type: String,
   },
+  cpr:{
+    type: String,
+    required: true,
+    unique: true,
+    validate: {
+      validator: function(v) {
+        return /^[0-9]{9}$/.test(v);
+      },
+      message: props => `${props.value} is not a valid CPR (must be exactly 9 digits)`
+    }
+  },
   patient_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

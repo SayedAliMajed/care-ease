@@ -30,6 +30,10 @@ router.get('/new', async (req,res) => {
 // Create new appointment
 router.post('/', async (req,res) => {
   try {
+    const cpr = req.body.cpr;
+    if (!/^\d{9}$/.test(cpr)) {
+      return res.send('CPR must be exactly 9 digits');
+    }
     req.body.patient_id = req.session.user._id;
     if (req.session.user.role === 'patient') {
       req.body.duration = 30;

@@ -9,6 +9,9 @@
     <%- include('../partials/_navbar.ejs') %>
     <h1>Edit appointment</h1>
     <form action="/appointments/<%= appointment._id%>?_method=PUT" method="POST">
+        <label for="cpr">CPR</label>
+        <input type="number" id="cpr" name="cpr" pattern="[0-9]{9}" maxlength="9" minlength="9" value="<%= appointment.cpr%>" required title="CPR must be exactly 9 digits"/>
+
         <label for="appointmentDate">Date</label>
         <input type="date" id="appointmentDate" name="date" value="<%= appointment.date.toISOString().slice(0, 10) %>"
 " required>
