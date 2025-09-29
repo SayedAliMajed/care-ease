@@ -3,6 +3,7 @@ const router = express.Router();
 
 const Availability = require('../models/availability');
 const Slot = require('../models/user');
+const authorize = require('../middleware/authorize');
 
 router.get('/', async (req,res) => {
     try {
@@ -24,5 +25,36 @@ router.get('/new', (req, res) => {
     }
 });
 
+// Availablity creation form
+router.get('/new', async (req,res) => {
+  try {
+    res.render('availabilitys/new', { user: req.session.user });
+
+  } catch (error) {
+    console.log(error);
+    res.redirect('/');
+
+  }
+});
+
+// Create new availability
+router.post('/', async (req,res) => {
+  try {
+   
+    if (!req.body.patient_id) {
+        req.body.employee_id = req.session.user._id;
+    }
+   
+    if (!req.body.patient_id) {
+        req.body.doctor_id = req.session.user._id;
+    }
+    await Availability.create(req.body);
+    res.redirect('/availabilitys');
+  } catch(error) {
+    console.log(error)
+    res.redirect('/');
+
+  }
+});
 
 module.exports = router;

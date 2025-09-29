@@ -11,7 +11,7 @@ const appointmentSchema = new mongoose.Schema({
   },
   duration: {
     type: Number,
-    default: 30, // default slot length in minutes
+    default: 20, // default slot length in minutes
   },
   status: {
     type: String,

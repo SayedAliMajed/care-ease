@@ -3,32 +3,32 @@ const router = express.Router();
 
 const Appointment = require('../models/appointment');
 const User = require('../models/user');
+const authorize = require('../middleware/authorize');
 
-router.get('/', async (req, res) => {
+// List appointments for logged-in patient
+router.get('/', authorize('appointments', 'read'), async (req, res) => {
   try {
     const patientId = req.session.user._id;
-    const appointments = await Appointment.find({ patient_id: patientId}).populate('employee_id patient_id');
-    res.render('appointments/index.ejs', { appointments });
+    const appointments = await Appointment.find({ patient_id: patientId }).populate('employee_id patient_id');
+    res.render('appointments/index.ejs', { appointments, user: req.session.user });
   } catch (error) {
     console.log(error);
     res.redirect('/');
   }
 });
 
-// Appointment creation form
-router.get('/new', async (req,res) => {
+// Appointment creation form - accessible to roles allowed to create appointments
+router.get('/new', authorize('appointments', 'create'), async (req, res) => {
   try {
     res.render('appointments/new', { user: req.session.user });
-
   } catch (error) {
     console.log(error);
     res.redirect('/');
-
   }
 });
 
 // Create new appointment
-router.post('/', async (req,res) => {
+router.post('/', authorize('appointments', 'create'), async (req, res) => {
   try {
     const cpr = req.body.cpr;
     if (!/^\d{9}$/.test(cpr)) {
@@ -41,63 +41,59 @@ router.post('/', async (req,res) => {
     }
     await Appointment.create(req.body);
     res.redirect('/appointments');
-  } catch(error) {
-    console.log(error)
-    res.redirect('/');
-
-  }
-});
-
-// Show Page
-
-router.get('/:appointmentId', async (req,res) => {
-  try {
-    const appointment = await Appointment.findById(req.params.appointmentId)
-    .populate('patient_id')
-    res.render('appointments/show.ejs', {
-      appointment
-    });
-  } catch(error) {
+  } catch (error) {
     console.log(error);
     res.redirect('/');
   }
 });
 
-// delete option
+// Show appointment details
+router.get('/:appointmentId', authorize('appointments', 'read'), async (req, res) => {
+  try {
+    const appointment = await Appointment.findById(req.params.appointmentId).populate('patient_id');
+    if (!appointment) return res.status(404).send('Appointment not found');
+    res.render('appointments/show.ejs', { appointment, user: req.session.user });
+  } catch (error) {
+    console.log(error);
+    res.redirect('/');
+  }
+});
 
-router.delete('/:appointmentId', async (req,res) => {
+// Delete appointment - only allow if logged-in user owns the appointment (patient_id check)
+router.delete('/:appointmentId', authorize('appointments', 'delete'), async (req, res) => {
   try {
     const appointment = await Appointment.findById(req.params.appointmentId);
-    if(appointment.patient_id.equals(req.session.user._id)) {
-      await appointment.deleteOne();
-      res.redirect('/appointments');
-    } else {
-      console.log('You are not authorized to delete the appointment')
+    if (!appointment) return res.status(404).send('Appointment not found');
+    if (!appointment.patient_id.equals(req.session.user._id)) {
+      console.log('You are not authorized to delete the appointment');
+      return res.status(403).send('Not authorized to delete this appointment');
     }
-
-  }catch(error) {
-    console.log(error);
-    res.redirect('/');
-    }
-});
-
-// Edit 
-
-router.get('/:appointmentId/edit', async (req,res) =>{
-  try {
-    const currentAppointment = await Appointment.findById(req.params.appointmentId);
-    res.render('appointments/edit.ejs', { appointment: currentAppointment});
-
-  }catch(error) {
+    await appointment.deleteOne();
+    res.redirect('/appointments');
+  } catch (error) {
     console.log(error);
     res.redirect('/');
   }
 });
 
-router.put('/:appointmentId', async (req,res) => {
+// Edit form
+router.get('/:appointmentId/edit', authorize('appointments', 'update'), async (req, res) => {
   try {
     const currentAppointment = await Appointment.findById(req.params.appointmentId);
-    if (!currentAppointment.patient_id.equals(req.session.user._id)){
+    if (!currentAppointment) return res.status(404).send('Appointment not found');
+    res.render('appointments/edit.ejs', { appointment: currentAppointment, user: req.session.user });
+  } catch (error) {
+    console.log(error);
+    res.redirect('/');
+  }
+});
+
+// Update appointment
+router.put('/:appointmentId', authorize('appointments', 'update'), async (req, res) => {
+  try {
+    const currentAppointment = await Appointment.findById(req.params.appointmentId);
+    if (!currentAppointment) return res.status(404).send('Appointment not found');
+    if (!currentAppointment.patient_id.equals(req.session.user._id)) {
       console.log('You are not authorized to update this appointment');
       return res.status(403).send('Not authorized');
     }
@@ -105,17 +101,13 @@ router.put('/:appointmentId', async (req,res) => {
       console.log('Cannot change appointment after it is cancelled');
       return res.status(400).send('Cannot update cancelled appointment');
     }
-    
-      Object.assign(currentAppointment, req.body);
-      await currentAppointment.save();
-      res.redirect(`/appointments/${req.params.appointmentId}`);
-
-  } catch(error) {
+    Object.assign(currentAppointment, req.body);
+    await currentAppointment.save();
+    res.redirect(`/appointments/${req.params.appointmentId}`);
+  } catch (error) {
     console.log(error);
     res.redirect('/');
   }
-
 });
-
 
 module.exports = router;
