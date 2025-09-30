@@ -25,6 +25,7 @@ const appointmentSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    index: true,
     validate: {
       validator: function(v) {
         return /^[0-9]{9}$/.test(v);

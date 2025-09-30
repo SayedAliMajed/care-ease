@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Edit Availability</title>
+</head>
+<body>
+  <h2>Edit Availability</h2>
+  <form action="/availabilitys/<%= availability._id %>?_method=PUT" method="POST">
+    <label>Date: 
+      <input type="date" name="date" required value="<%= new Date(availability.date).toISOString().substring(0,10) %>" />
+    </label><br />
+    <label>Opening Time: 
+      <input type="time" name="openingTime" required value="<%= availability.openingTime %>" />
+    </label><br />
+    <label>Closing Time: 
+      <input type="time" name="closingTime" required value="<%= availability.closingTime %>" />
+    </label><br />
+    <label>Slot Duration (minutes): 
+      <input type="number" name="duration" min="1" required value="<%= availability.duration %>" />
+    </label><br />
+    <label>Break Start Time (optional): 
+      <input type="time" name="breakStartTime" value="<%= availability.breakStartTime || '' %>" />
+    </label><br />
+    <label>Break End Time (optional): 
+      <input type="time" name="breakEndTime" value="<%= availability.breakEndTime || '' %>" />
+    </label><br />
+    <button type="submit">Save Changes</button>
+  </form>
+  <a href="/availabilitys">Back to List</a>
+</body>
+</html>
+
+

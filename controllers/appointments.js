@@ -1,104 +1,117 @@
 const express = require('express');
 const router = express.Router();
-
-const Appointment = require('../models/appointment');
 const authorize = require('../middleware/authorize');
 
-// Apply role-based authorization middleware on all appointment routes
 router.use(authorize('appointments', 'read'));
+const Availability = require('../models/availability');
+const Appointment = require('../models/appointment');
 
-router.get('/', async (req, res) => {
+
+
+function toMinutes (timeStr) {
+  const [h,m] = timeStr.split(':').map(Number);
+  return h* 60 + m;
+}
+
+function minutesToTime(min) {
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+}
+
+function generateSlots(availability) {
+  const slots = [];
+  let currentTime = toMinutes(availability.openingTime);
+  const closeTime = toMinutes(availability.closingTime);
+  const breakStart = availability.breakStartTime ? toMinutes(availability.breakStartTime) : null;
+  const breakEnd = availability.breakEndTime ? toMinutes(availability.breakEndTime) : null;
+
+  while (currentTime + availability.duration <= closeTime) {
+    if (breakStart !== null && breakEnd !== null) {
+      if (currentTime >= breakStart && currentTime < breakEnd) {
+        currentTime = breakEnd;
+        continue;
+      }
+    }
+    slots.push(minutesToTime(currentTime));
+    currentTime += availability.duration;
+  }
+  return slots;
+}
+
+router.get('/availability/:availabilityId', authorize('appointments', 'read'), async (req,res) => {
   try {
-    const patientId = req.session.user._id;
-    const appointments = await Appointment.find({ patient_id: patientId }).populate('employee_id patient_id');
-    res.render('appointments/index.ejs', { appointments });
-  } catch (error) {
+    const availability = await Availability.findById(req.params.availabilityId);
+    if (!availability) return res.status(404).send ('Availability not found');
+
+    let possibleSlots = generateSlots(availability);
+    const bookedAppointments = await Appointment.find({
+      availabilityId: availability._id,
+      date: availability.date,
+    });
+
+    const bookedTimes = bookedAppointments.map(app => app.slotTime);
+    const availableSlots = possibleSlots.filter(slot => !bookedTimes.includes(slot));
+
+    res.render('appointments/slots', {
+      availability,
+      availableSlots,
+    });
+
+  } catch(error) {
     console.log(error);
     res.redirect('/');
+
   }
 });
 
-router.get('/new', async (req,res) => {
+router.post('/', authorize('appointments', 'post'), async (req,res) => {
   try {
-    res.render('appointments/new', { user: req.session.user });
-  } catch (error) {
-    console.log(error);
-    res.redirect('/');
-  }
-});
+    const {cpr, slotTime, availabilityId, patientName} = req.body;
 
-router.post('/', async (req,res) => {
-  try {
-    const cpr = req.body.cpr;
     if (!/^\d{9}$/.test(cpr)) {
       return res.send('CPR must be exactly 9 digits');
     }
-    req.body.patient_id = req.session.user._id;
-    if (req.session.user.role === 'patient') {
-      req.body.duration = 20;
-      req.body.prescription = '';
-    }
-    await Appointment.create(req.body);
-    res.redirect('/appointments');
-  } catch(error) {
-    console.log(error);
-    res.redirect('/');
-  }
-});
 
-router.get('/:appointmentId', async (req,res) => {
-  try {
-    const appointment = await Appointment.findById(req.params.appointmentId).populate('patient_id');
-    res.render('appointments/show.ejs', { appointment });
-  } catch(error) {
-    console.log(error);
-    res.redirect('/');
-  }
-});
-
-router.delete('/:appointmentId', async (req,res) => {
-  try {
-    const appointment = await Appointment.findById(req.params.appointmentId);
-    if(appointment.patient_id.equals(req.session.user._id)) {
-      await appointment.deleteOne();
-      res.redirect('/appointments');
-    } else {
-      console.log('You are not authorized to delete the appointment');
+   if (!slotTime || !availabilityId || !patientName) {
+      return res.send('Missing required appointment fields');
     }
+
+    const patient_id = req.session.user._id;
+
+    let duration = 20;
+    let prescription = '';
+    if (req.session.user.role !== 'patient') {
+      duration = req.body.duration || 20;
+      prescription = req.body.prescription || '';
+    }
+
+    const existingAppointment = await Appointment.findOne({
+      availabilityId,
+      slotTime,
+    });
+
+    if (existingAppointment) {
+      return res.send('Selected time slot is already booked')
+    }
+    const appointmentData = {
+      availabilityId,
+      patient_id,
+      slotTime,
+      patientName,
+      cpr,
+      duration,
+      prescription,
+      date: req.body.date || new Date(),
+    };
+
+    await Appointment.create(appointmentData);
+
   }catch(error) {
     console.log(error);
     res.redirect('/');
   }
 });
 
-router.get('/:appointmentId/edit', async (req,res) =>{
-  try {
-    const currentAppointment = await Appointment.findById(req.params.appointmentId);
-    res.render('appointments/edit.ejs', { appointment: currentAppointment });
-  }catch(error) {
-    console.log(error);
-    res.redirect('/');
-  }
-});
-
-router.put('/:appointmentId', async (req,res) => {
-  try {
-    const currentAppointment = await Appointment.findById(req.params.appointmentId);
-    if (!currentAppointment.patient_id.equals(req.session.user._id)){
-      console.log('You are not authorized to update this appointment');
-      return res.status(403).send('Not authorized');
-    }
-    if (currentAppointment.status === 'cancelled' && req.body.status !== 'cancelled') {
-      console.log('Cannot change appointment after it is cancelled');
-      return res.status(400).send('Cannot update cancelled appointment');
-    }
-    Object.assign(currentAppointment, req.body);
-    await currentAppointment.save();
-    res.redirect(`/appointments/${req.params.appointmentId}`);
-  } catch(error) {
-    console.log(error);
-    res.redirect('/');
-  }
-});
 
 module.exports = router;
