@@ -32,7 +32,7 @@ mongoose.connection.on('connected', () => {
 // MIDDLEWARE
 
 // Middleware to parse URL-encoded data from forms
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 // Middleware for using HTTP verbs such as PUT or DELETE
 app.use(methodOverride('_method'));
 // Morgan for logging HTTP requests
@@ -59,6 +59,7 @@ app.use(require('./controllers/admin'));
 app.use(isSignedIn);
 app.use('/appointments', appointmentsController);
 app.use('/availabilitys', availabilitysController);
+app.use(express.json());
 
 // PROTECTED
 

@@ -1,21 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Availabilitys Date</title>
+  <meta charset="UTF-8" />
+  <title>New Availability</title>
 </head>
 <body>
-    <%- include('../partials/_navbar.ejs') %>
-    <h1>Add a new availability</h1>
-    <form action="/availabilitys" method="POST">
-        <label for="availabilityDate">Date</label>
-        <input type="date" id="availabilitDate" name="availabilitDate" required>
-
-        <label for="availabilityTime">Time</label>
-        <input type="time" id="availabilityTime" name="availabilityTime" required>
-
-        <button type="submit">Add availability</button>
-    </form>
+  <h2>Add New Availability</h2>
+  <form action="/availabilitys" method="POST">
+    <label>Date: <input type="date" name="date" required /></label><br />
+    <label>Opening Time: <input type="time" name="openingTime" required /></label><br />
+    <label>Closing Time: <input type="time" name="closingTime" required /></label><br />
+    <label>Slot Duration (minutes): <input type="number" name="duration" min="1" required /></label><br />
+    <label>Break Start Time (optional): <input type="time" name="breakStartTime" /></label><br />
+    <label>Break End Time (optional): <input type="time" name="breakEndTime" /></label><br />
+    <button type="submit">Add Availability</button>
+  </form>
+  <a href="/availabilitys">Back to List</a>
 </body>
 </html>
