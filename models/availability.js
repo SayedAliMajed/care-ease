@@ -1,14 +1,12 @@
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-const slotSchema = new mongoose.Schema({
-    time: {
-        type: String,
-        required: true,  
+const BreakTimeSchema = new mongoose.Schema({
+    startTime: {
+        type: String, 
     },
-    isBooked: {
-        type: Boolean,
-        required: true,
-        default: false,
+    endTime: {
+        type: String,
     }
 });
 
@@ -16,15 +14,30 @@ const availabilitySchema = new mongoose.Schema({
     date: {
         type: Date,
         required: true,
+        index:true,
     },
-    slots: [slotSchema],
-    employee_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+    openingTime: {
+        type: String,
         required: true,
     },
-}, { timestamps: true });  
+    closingTime:{
+        type:String,
+        required: true,
+    },
+    duration: {
+        type:Number,
+        required: true,
+    },
+    userId: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: true,
+        index: true,
+    },
+    breakTimes: [BreakTimeSchema]
+    });  
 
+availabilitySchema.index({ userId: 1, date: 1 }, { unique: true });
 const Availability = mongoose.model('Availability', availabilitySchema);
 
 module.exports = Availability;
