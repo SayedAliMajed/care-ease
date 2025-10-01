@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const User = require('../models/user');
+const Appointment = require('../models/appointment');
 
 const router = express.Router();
 
@@ -12,7 +13,7 @@ const permissions = {
   patient: { appointments: ['create', 'read', 'update'], users: [] },
 };
 
-// Broad role check middleware
+// Role check middleware
 function isAdmin(req, res, next) {
   if (req.session?.user?.role === 'admin') return next();
   return res.status(403).send('Forbidden: Admins only');
@@ -26,7 +27,6 @@ function isDoctor(req, res, next) {
   return res.status(403).send('Forbidden: Doctors only');
 }
 
-
 function authorizeAction(model, action) {
   return (req, res, next) => {
     const role = req.session.user?.role;
@@ -37,7 +37,7 @@ function authorizeAction(model, action) {
   };
 }
 
-// Admin user routes with combined checks
+// User management routes
 router.get('/create-user', isAdmin, (req, res) => {
   res.render('admin/create-user.ejs');
 });
@@ -80,16 +80,26 @@ router.get('/users', isAdmin, authorizeAction('users', 'read'), async (req, res)
   }
 });
 
-router.get('/dashboard', isAdmin, (req, res) => {
-  res.render('admin/dashboard.ejs', { user: req.session.user });
-});
+router.get('/dashboard', async (req, res) => {
+  const role = req.session.user?.role;
 
-router.get('/employee/dashboard', isEmployee, (req, res) => {
-  res.render('employee/dashboard.ejs', { user: req.session.user });
-});
-
-router.get('/doctor/dashboard', isDoctor, (req, res) => {
-  res.render('doctor/dashboard.ejs', { user: req.session.user });
+  try {
+    if (role === 'doctor') {
+     
+      const appointments = await Appointment.find({ doctorId: req.session.user._id });
+      return res.render('dashboard/doctor', { user: req.session.user, appointments });
+    }
+    if (role === 'admin') {
+      return res.render('dashboard/admin', { user: req.session.user });
+    }
+    if (role === 'employee') {
+      return res.render('dashboard/employee', { user: req.session.user });
+    }
+    return res.status(403).send('Access denied');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal server error');
+  }
 });
 
 module.exports = router;

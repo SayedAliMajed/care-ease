@@ -72,17 +72,9 @@ router.post('/sign-in', async (req, res) => {
       role: userInDatabase.role
     };
 
-    req.session.save(() => {
-  if (userInDatabase.role === 'admin') {
-    res.redirect('/admin/dashboard');
-  } else if (userInDatabase.role === 'employee') {
-    res.redirect('/employee/dashboard');
-  } else if (userInDatabase.role === 'doctor') {
-    res.redirect('/doctor/dashboard');
-  } else {
-    res.redirect('/');
-  }
-});
+   req.session.save(() => {
+      res.redirect('/admin/dashboard');
+    });;
 
   } catch (error) {
     console.error(error);

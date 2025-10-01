@@ -18,11 +18,11 @@ const passUserToView = require("./middleware/pass-user-to-view.js");
 const authController = require('./controllers/auth.js');
 const appointmentsController = require('./controllers/appointments.js');
 const availabilitysController = require('./controllers/availabilitys.js');
-const adminController = require('./controllers/admin.js');
+const adminController = require('./controllers/admin');
 
 // Set the port from environment variable or default to 3000
 const port = process.env.PORT ? process.env.PORT : '3000';
-
+const path = require('path');
 mongoose.connect(process.env.MONGODB_URI);
 
 mongoose.connection.on('connected', () => {
@@ -37,6 +37,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
 // Morgan for logging HTTP requests
 app.use(morgan('dev'));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -55,7 +56,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/auth', authController);
-app.use(require('./controllers/admin'));
+app.use('/admin', adminController);
 app.use(isSignedIn);
 app.use('/appointments', appointmentsController);
 app.use('/availabilitys', availabilitysController);

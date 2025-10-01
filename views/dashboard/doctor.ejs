@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Doctor Dashboard</title>
+  <link rel="stylesheet" href="/stylesheets/style.css" />
+</head>
+<body>
+
+  <header>
+    <h1>Welcome, Dr. <%= user?.username || 'Doctor' %></h1>
+    <nav>
+      <a href="/admin/availability/manage" class="btn">Add / Edit Availability</a>
+    </nav>
+  </header>
+
+  <section>
+    <h2>Upcoming Appointments</h2>
+
+    <% if (appointments && appointments.length > 0) { %>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Time Slot</th>
+            <th>Patient</th>
+            <th>Reason</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% appointments.forEach(appointment => { %>
+            <tr>
+              <td><%= new Date(appointment.date).toDateString() %></td>
+              <td><%= appointment.slotTime %></td>
+              <td><%= appointment.patientName || 'N/A' %></td>
+              <td><%= appointment.reason || 'N/A' %></td>
+              <td>
+                <% if (appointment.status === 'scheduled') { %>
+                  Scheduled
+                <% } else if (appointment.status === 'completed') { %>
+                  Completed
+                <% } else if (appointment.status === 'cancelled') { %>
+                  Cancelled
+                <% } else { %>
+                  Unknown
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } else { %>
+      <p>No upcoming appointments.</p>
+    <% } %>
+  </section>
+
+  <footer>
+    <p>CareEase © 2025</p>
+  </footer>
+
+</body>
+</html>

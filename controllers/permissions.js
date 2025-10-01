@@ -8,6 +8,7 @@ const permissions = {
   },
   doctor: {
     appointments: ['read', 'update'],
+    availabilitys: ['create', 'read', 'update', 'delete'],
   },
   admin: {
     appointments: ['create', 'read', 'update', 'delete'],
