@@ -88,5 +88,10 @@ router.delete('/:availabilityId', authorize('availabilitys', 'delete'), async (r
     console.log(error);
     res.redirect('/availabilitys');
   }
-})
+});
+
+router.get('/manage', (req, res) => {
+  res.render('availabilitys/manage.ejs');  
+});
+
 module.exports = router;

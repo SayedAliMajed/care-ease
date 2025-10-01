@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Manage Availability</title>
+  <link rel="stylesheet" href="/stylesheets/style.css" />
+</head>
+<body>
+
+  <header>
+    <h1>Manage Your Availability</h1>
+    <nav>
+      <a href="/dashboard" class="btn">Back to Dashboard</a>
+    </nav>
+  </header>
+
+  <section>
+    <h2>Add Availability Slot</h2>
+    <form action="/availabilitys/manage" method="POST">
+      <label for="date">Date:</label>
+      <input type="date" id="date" name="date" required />
+
+      <label for="slots">Slots (comma-separated):</label>
+      <input type="text" id="slots" name="slots" placeholder="09:00 AM - 10:00 AM, 10:00 AM - 11:00 AM" required />
+
+      <button type="submit">Add Availability</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>Your Current Availabilities</h2>
+    <% if (availabilitys && availabilitys.length > 0) { %>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Slots</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% availabilitys.forEach(avail => { %>
+            <tr>
+              <td><%= new Date(avail.date).toDateString() %></td>
+              <td><%= avail.slots.join(', ') %></td>
+              <td>
+                <!-- Action buttons like Edit, Delete -->
+                <form action="/availabilitys/manage/<%= avail._id %>?_method=DELETE" method="POST" style="display:inline;">
+                  <button type="submit" onclick="return confirm('Are you sure to delete this availability?');">Delete</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } else { %>
+      <p>No availability added yet.</p>
+    <% } %>
+  </section>
+
+</body>
+</html>
