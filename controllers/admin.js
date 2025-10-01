@@ -85,7 +85,6 @@ router.get('/dashboard', async (req, res) => {
 
   try {
     if (role === 'doctor') {
-     
       const appointments = await Appointment.find({ doctorId: req.session.user._id });
       return res.render('dashboard/doctor', { user: req.session.user, appointments });
     }
@@ -94,6 +93,10 @@ router.get('/dashboard', async (req, res) => {
     }
     if (role === 'employee') {
       return res.render('dashboard/employee', { user: req.session.user });
+    }
+    if (role === 'patient') {
+      const appointments = await Appointment.find({ patient_id: req.session.user._id });
+      return res.render('appointments/index', { user: req.session.user, appointments });
     }
     return res.status(403).send('Access denied');
   } catch (error) {
@@ -108,15 +111,13 @@ exports.dashboard = async (req, res) => {
     if (userRole === 'doctor') {
       const doctorId = req.session.user._id;
 
-      // Fetch upcoming appointments for this doctor
       const appointments = await Appointment.find({
         doctorId: doctorId,
-        status: 'scheduled' // or filter needed statuses
+        status: 'scheduled' 
       })
-      .populate('patient_id', 'username') // Populate patient username from User model
+      .populate('patient_id', 'username','cpr') 
       .sort({ date: 1 });
 
-      // Map appointments to add patientName for easier EJS rendering
       const mappedAppointments = appointments.map(app => ({
         ...app.toObject(),
         patientName: app.patient_id?.username || 'Unknown'
@@ -128,9 +129,9 @@ exports.dashboard = async (req, res) => {
       });
     }
 
-    // Handle other roles here similarly we can add dashboard view
 
-    res.redirect('/'); // fallback or other handling
+
+    res.redirect('/');
   } catch (error) {
     console.error('Error rendering dashboard:', error);
     res.status(500).send('Server error');

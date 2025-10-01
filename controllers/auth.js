@@ -25,21 +25,30 @@ router.post('/sign-up', async (req, res) => {
       return res.send('Password and Confirm Password must match');
     }
 
+    if (!/^\d{9}$/.test(req.body.cpr)) {
+      return res.send('CPR must be exactly 9 digits');
+    }
+
     const hashedPassword = bcrypt.hashSync(req.body.password, 10);
 
-    // Create user with role as 'patient' explicitly
+    
     const newUser = await User.create({
       username: req.body.username,
       password: hashedPassword,
-      email: req.body.email,   
-      role: 'patient'
+      email: req.body.email,
+      role: 'patient',
+      profile: {
+        fullName: req.body.fullName,
+        cpr: req.body.cpr,
+      },
     });
 
-    // Store key user info in session for auth and app routes
+    // Store user info in session
     req.session.user = {
       username: newUser.username,
       _id: newUser._id,
-      role: newUser.role
+      role: newUser.role,
+      profile: newUser.profile,
     };
 
     req.session.save(() => {
@@ -50,6 +59,7 @@ router.post('/sign-up', async (req, res) => {
     res.send('Error while creating account');
   }
 });
+
 
 router.post('/sign-in', async (req, res) => {
   try {

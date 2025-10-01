@@ -23,6 +23,7 @@ const userSchema = new mongoose.Schema({
   },
   profile: {
     fullName: String,
+    cpr: String,
     phone: String,
     address: String,
     department: String, // only for employee

@@ -1,39 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add new appointment</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Book a New Appointment</title>
+  <link rel="stylesheet" href="/stylesheets/style.css" />
 </head>
 <body>
-    <%- include('../partials/_navbar.ejs') %>
-    <h1>Add a new appointment</h1>
-    <form action="/appointments" method="POST">
-        <label for="cpr">CPR</label>
-        <input type="number" id="cpr" name="cpr" pattern="[0-9]{9}" maxlength="9" minlength="9"  required title="CPR must be exactly 9 digits"/>
 
-        <label for="appointmentDate">Date</label>
-        <input type="date" id="appointmentDate" name="date" required>
+  <%- include('../partials/_navbar.ejs') %>
 
-        <label for="appointmentTime">Time</label>
-        <input type="time" id="appointmentTime" name="time" required>
+  <h1>Book a New Appointment</h1>
 
-        <label for="status">Status</label>
-        <select name="status" id="status" required>
-            <option value="scheduled">Scheduled</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-        </select>
+  <form method="POST" action="/appointments">
+    <p>
+      Name: <strong><%= user.profile.fullName ? user.profile.fullName : 'Not Available'%></strong>
+      <input type="hidden" name="patientName" value="<%= user.profile.fullName || '' %>" />
+    </p>
 
-        <% if (user.role !== 'patient') { %>
-        <label for="duration">Duration</label>
-        <input type="number" id="duration" name="duration" value="30" min="5" required>
+    <p>
+      CPR: <strong><%= user.profile.cpr ? user.profile.cpr : 'Not Available' %></strong>
+      <input type="hidden" name="cpr" value="<%= user.profile.cpr || '' %>" />
+    </p>
 
-        <label for="prescription">Prescription</label>
-        <textarea id="prescription" name="prescription" rows="5" cols="40"></textarea>
-        <% } %>
-        
-        <button type="submit">Book Appointment</button>
-    </form>
+    <label for="availabilityId">Available Date & Time Slot:</label>
+    <select id="availabilityId" name="availabilityId" required>
+      <option value="" disabled selected>Select a date and time slot</option>
+      <% availabilities.forEach(avail => { %>
+        <option value="<%= avail._id %>">
+          <%= avail.date.toDateString() %> - From <%= avail.openingTime %> to <%= avail.closingTime %>
+        </option>
+      <% }) %>
+    </select>
+
+    <label for="slotTime">Select Slot Time:</label>
+    <select id="slotTime" name="slotTime" required>
+      <% availableSlots.forEach(slot => { %>
+        <option value="<%= slot %>"><%= slot %></option>
+      <% }) %>
+    </select>
+
+    <button type="submit">Book Appointment</button>
+  </form>
+
 </body>
 </html>

@@ -1,16 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const authorize = require('../middleware/authorize');
 
-router.use(authorize('appointments', 'read'));
+const authorize = require('../middleware/authorize');
 const Availability = require('../models/availability');
 const Appointment = require('../models/appointment');
 
+router.use(authorize('appointments', 'read'));
 
-
-function toMinutes (timeStr) {
-  const [h,m] = timeStr.split(':').map(Number);
-  return h* 60 + m;
+function toMinutes(timeStr) {
+  const [h, m] = timeStr.split(':').map(Number);
+  return h * 60 + m;
 }
 
 function minutesToTime(min) {
@@ -39,10 +38,10 @@ function generateSlots(availability) {
   return slots;
 }
 
-router.get('/availability/:availabilityId', authorize('appointments', 'read'), async (req,res) => {
+router.get('/availability/:availabilityId', authorize('appointments', 'read'), async (req, res) => {
   try {
     const availability = await Availability.findById(req.params.availabilityId);
-    if (!availability) return res.status(404).send ('Availability not found');
+    if (!availability) return res.status(404).send('Availability not found');
 
     let possibleSlots = generateSlots(availability);
     const bookedAppointments = await Appointment.find({
@@ -57,27 +56,74 @@ router.get('/availability/:availabilityId', authorize('appointments', 'read'), a
       availability,
       availableSlots,
     });
-
-  } catch(error) {
+  } catch (error) {
     console.log(error);
     res.redirect('/');
-
   }
 });
 
-router.post('/', authorize('appointments', 'post'), async (req,res) => {
+router.get('/', authorize('appointments', 'read'), async (req, res) => {
   try {
-    const {cpr, slotTime, availabilityId, patientName} = req.body;
-
-    if (!/^\d{9}$/.test(cpr)) {
-      return res.send('CPR must be exactly 9 digits');
+    const user = req.session.user;
+    if (!user) {
+      return res.redirect('/auth/sign-in'); 
     }
 
-   if (!slotTime || !availabilityId || !patientName) {
+  
+    const appointments = await Appointment.find({ patient_id: user._id }).sort({ date: 1 });
+
+    res.render('appointments/index', {
+      user,
+      appointments,
+    });
+  } catch (error) {
+    console.error(error);
+    res.redirect('/');
+  }
+});
+
+
+
+router.get('/new', authorize('appointments', 'create'), async (req, res) => {
+  try {
+    const availabilities = await Availability.find({}).sort({ date: 1, openingTime: 1 });
+
+    let availableSlots = [];
+    if (availabilities.length) {
+      const firstAvailability = availabilities[0];
+      availableSlots = generateSlots(firstAvailability);
+    }
+
+    res.render('appointments/new', { availabilities, availableSlots, user: req.session.user });
+  } catch (error) {
+    console.error(error);
+    res.redirect('/appointments');
+  }
+});
+
+
+router.post('/', authorize('appointments', 'create'), async (req, res) => {
+  try {
+    const { slotTime, availabilityId } = req.body;
+
+    
+    const patientName = req.session.user.profile.fullName;
+    const cpr = req.session.user.profile.cpr;
+    const patient_id = req.session.user._id;
+
+    if (!slotTime || !availabilityId || !patientName || !cpr) {
       return res.send('Missing required appointment fields');
     }
 
-    const patient_id = req.session.user._id;
+   
+    const existingAppointment = await Appointment.findOne({
+      availabilityId,
+      slotTime,
+    });
+
+    if (existingAppointment) {
+      return res.send('Selected time slot is already booked');
+    }
 
     let duration = 20;
     let prescription = '';
@@ -86,14 +132,6 @@ router.post('/', authorize('appointments', 'post'), async (req,res) => {
       prescription = req.body.prescription || '';
     }
 
-    const existingAppointment = await Appointment.findOne({
-      availabilityId,
-      slotTime,
-    });
-
-    if (existingAppointment) {
-      return res.send('Selected time slot is already booked')
-    }
     const appointmentData = {
       availabilityId,
       patient_id,
@@ -107,50 +145,37 @@ router.post('/', authorize('appointments', 'post'), async (req,res) => {
 
     await Appointment.create(appointmentData);
     res.redirect('/appointments');
-  }catch(error) {
+  } catch (error) {
     console.log(error);
     res.redirect('/');
   }
 });
 
-router.get('/:appointmentId/edit', authorize('appointments', 'update'), async (req,res) => {
-  try {
-    const appointment = await Appointment.findById(req.params.appointmentId);
-    if (!appointment) return res.status(404).send('Appointment not found');
-    res.render('/appointments/edit', {appointment});
 
-  }catch(error) {
-    console.log(error);
-    res.redirect('/appointments');
-  }
-});
-
-router.put('/:appointmentId', authorize('appointments','put'), async (req,res) => {
+router.put('/:appointmentId', authorize('appointments', 'update'), async (req, res) => {
   try {
-    const { patientName, cpr, slotTime} = req.body;
+    const { slotTime } = req.body;
+
     await Appointment.findByIdAndUpdate(req.params.appointmentId, {
-      patientName,
-      cpr,
       slotTime,
     });
+
     res.redirect('/appointments');
-  }catch(error) {
+  } catch (error) {
     console.log(error);
     res.redirect('/appointments');
   }
 });
 
-router.delete('/:appointmentId', authorize('appointments', 'delete'), async (req,res) => {
+// Delete appointment
+router.delete('/:appointmentId', authorize('appointments', 'delete'), async (req, res) => {
   try {
     await Appointment.findByIdAndDelete(req.params.appointmentId);
-    res.redirect('/appointments')
-
-  }catch(error) {
+    res.redirect('/appointments');
+  } catch (error) {
     console.log(error);
     res.redirect('/appointments');
   }
 });
-
-
 
 module.exports = router;
