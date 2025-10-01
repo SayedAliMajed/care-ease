@@ -106,12 +106,51 @@ router.post('/', authorize('appointments', 'post'), async (req,res) => {
     };
 
     await Appointment.create(appointmentData);
-
+    res.redirect('/appointments');
   }catch(error) {
     console.log(error);
     res.redirect('/');
   }
 });
+
+router.get('/:appointmentId/edit', authorize('appointments', 'update'), async (req,res) => {
+  try {
+    const appointment = await Appointment.findById(req.params.appointmentId);
+    if (!appointment) return res.status(404).send('Appointment not found');
+    res.render('/appointments/edit', {appointment});
+
+  }catch(error) {
+    console.log(error);
+    res.redirect('/appointments');
+  }
+});
+
+router.put('/:appointmentId', authorize('appointments','put'), async (req,res) => {
+  try {
+    const { patientName, cpr, slotTime} = req.body;
+    await Appointment.findByIdAndUpdate(req.params.appointmentId, {
+      patientName,
+      cpr,
+      slotTime,
+    });
+    res.redirect('/appointments');
+  }catch(error) {
+    console.log(error);
+    res.redirect('/appointments');
+  }
+});
+
+router.delete('/:appointmentId', authorize('appointments', 'delete'), async (req,res) => {
+  try {
+    await Appointment.findByIdAndDelete(req.params.appointmentId);
+    res.redirect('/appointments')
+
+  }catch(error) {
+    console.log(error);
+    res.redirect('/appointments');
+  }
+});
+
 
 
 module.exports = router;
