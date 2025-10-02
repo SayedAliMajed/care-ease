@@ -2,20 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+ <link rel="stylesheet" href="/css/style.css" />
   <title>Employee Dashboard</title>
 </head>
 <body>
 
   <%- include('../partials/_navbar.ejs') %>
- <a href="/auth/sign-out">Sign Out</a>
+
   <h1>Employee Dashboard</h1>
-  <p>Welcome, <%= user?.profile?.fullName || 'Employee' %></p>
+
 
   <div>
     <button onclick="location.href='/appointments'" >
       View Appointments
     </button>
-    <button onclick="location.href='/appointments/create'" >
+    <button onclick="location.href='/appointments/new'" >
       Create Appointment
     </button>
   </div>

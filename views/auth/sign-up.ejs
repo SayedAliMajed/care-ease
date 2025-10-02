@@ -1,11 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sign Up</title>
-  </head>
-  <body>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/stylesheets/style.css" />
+  <title>Sign Up</title>
+</head>
+
+<body>
+ 
+  <main class="container">
     <h1>Create a new account!</h1>
     <form action="/auth/sign-up" method="POST">
       <label for="username">Username:</label>
@@ -26,7 +31,9 @@
       <label for="cpr">CPR (9 digits):</label>
       <input type="text" name="cpr" id="cpr" pattern="[0-9]{9}" title="9 digit CPR number" required />
 
-      <button type="submit">Sign up</button>
+      <button type="submit" class="button-primary">Sign up</button>
     </form>
-  </body>
+  </main>
+</body>
+
 </html>

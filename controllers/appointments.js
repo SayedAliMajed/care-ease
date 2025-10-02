@@ -151,6 +151,21 @@ router.post('/', authorize('appointments', 'create'), async (req, res) => {
   }
 });
 
+router.get('/:appointmentId/edit', authorize('appointments', 'update'), async (req,res) =>{
+  try {
+    const appointmentId = req.params.appointmentId;
+    const appointment = await Appointment.findById(appointmentId);
+
+    if (!appointment) {
+      return res.status(404).send('Appointment not found');
+    }
+
+    res.render('appointments/edit', { appointment });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+});
 
 
 router.put('/:appointmentId', authorize('appointments', 'update'), async (req, res) => {

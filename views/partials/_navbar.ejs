@@ -1,6 +1,6 @@
 <nav>
   <% if (user && user.profile && user.profile.fullName) { %>
-    <p>Welcome, <%= user.profile.fullName %></p>
+    <p><strong>Welcome, <%= user.profile.fullName %></strong></p>
 
     <% if (user.role === 'patient') { %>
       <a href="/appointments">View My appointments</a>
