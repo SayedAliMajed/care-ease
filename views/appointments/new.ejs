@@ -1,38 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="/css/style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/stylesheets/style.css" />
   <title>Book New Appointment</title>
-  
 </head>
+
 <body>
-  <h1>Book a New Appointment</h1>
   <%- include('../partials/_navbar.ejs') %>
-  <form action="/appointments" method="POST" class="container">
-    <label for="doctor_id">Select Doctor:</label>
-    <select name="doctor_id" id="doctor_id" required>
-      <% doctors.forEach(doctor => { %>
+  <main class="container">
+    <h1>Book a New Appointment</h1>
+    <form action="/appointments" method="POST">
+      <label for="doctor_id">Select Doctor:</label>
+      <select name="doctor_id" id="doctor_id" required>
+        <% doctors.forEach(doctor => { %>
         <option value="<%= doctor._id %>"><%= doctor.profile.fullName %></option>
-      <% }) %>
-    </select>
+        <% }) %>
+      </select>
 
-    <label for="availabilityId">Select Date & Slot:</label>
-    <select name="availabilityId" id="availabilityId" required>
-      <% availabilities.forEach(slot => { %>
+      <label for="availabilityId">Select Date & Slot:</label>
+      <select name="availabilityId" id="availabilityId" required>
+        <% availabilities.forEach(slot => { %>
         <option value="<%= slot._id %>"><%= slot.date.toDateString() %> - <%= slot.openingTime %> to <%= slot.closingTime %></option>
-      <% }) %>
-    </select>
+        <% }) %>
+      </select>
 
-    <label for="slotTime">Select Time Slot:</label>
-    <select name="slotTime" id="slotTime" required>
-      <% availableSlots.forEach(time => { %>
+      <label for="slotTime">Select Time Slot:</label>
+      <select name="slotTime" id="slotTime" required>
+        <% availableSlots.forEach(time => { %>
         <option value="<%= time %>"><%= time %></option>
-      <% }) %>
-    </select>
+        <% }) %>
+      </select>
 
-    <button type="submit" class="button button-outline">Book Appointment</button>
-  </form>
+      <button type="submit" class="button-primary">Book Appointment</button>
+    </form>
+  </main>
 </body>
+
 </html>

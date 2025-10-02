@@ -1,27 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="/css/style.css" />
-
+  <link rel="stylesheet" href="/stylesheets/style.css" />
   <title>Admin Dashboard</title>
 </head>
+
 <body>
-  <h1>Welcome Admin - <%= user?.profile?.fullName || 'Administrator' %></h1>
-
-  <div>
-    <a href="/admin/create-user">Create New User</a> |
-    <a href="/admin/users">View Users List</a> |
-    
-    <a href="/admin/sign-out">sign-out</a> 
-
-  </div>
-
-  <div>
-    <h3>Admin Dashboard</h3>
-    <p>Use the links above to manage users and your application.</p>
-    <!-- Additional dashboard content or stats can be added here -->
-  </div>
+  <%- include('../partials/_navbar.ejs') %>
+  <main class="container">
+    <h1>Welcome Admin - <%= user?.profile?.fullName || 'Administrator' %></h1>
+    <nav class="dashboard-nav">
+      <a href="/admin/create-user" class="button-primary">Create New User</a>
+      <a href="/admin/users" class="button-primary">View Users List</a>
+      <a href="/admin/sign-out" class="button-outline">Sign Out</a>
+    </nav>
+    <section>
+      <h3>Admin Dashboard</h3>
+      <p>Use the links above to manage users and your application.</p>
+     
+    </section>
+  </main>
+   <%- include('../partials/_footer') %>
 </body>
+
 </html>

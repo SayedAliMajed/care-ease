@@ -1,31 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <link rel="stylesheet" href="/css/style.css" />
 
-  <title>My Appointments</title>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/stylesheets/style.css" />
+  <title>Your Appointments</title>
 </head>
+
 <body>
   <%- include('../partials/_navbar.ejs') %>
-  <a href="/appointments/new"> Add New Appointments</a>
-  <h1>Your Appointments List</h1>
-  <ul class="appointments-list">
-    <% if (appointments && appointments.length > 0) { %>
+  <main class="container">
+    <a href="/appointments/new" class="button-outline">Add New Appointment</a>
+    <h1>Your Appointments List</h1>
+    <ul class="appointments-list">
+      <% if (appointments && appointments.length > 0) { %>
       <% appointments.forEach((appointment) => { %>
-        <li>
-          <a href="/appointments/<%= appointment._id %>">
-            <%= new Date(appointment.date).toLocaleDateString() %>
-            <% if (appointment.time) { %> - <%= appointment.time %> <% } %>
-            <% if (appointment.status) { %> (<%= appointment.status %>) <% } %>
-          </a>
-          <a href="/appointments/<%= appointment._id %>/edit">Edit</a>
-        </li>
+      <li>
+        <a href="/appointments/<%= appointment._id %>">
+          <%= new Date(appointment.date).toLocaleDateString() %>
+          <% if (appointment.time) { %> - <%= appointment.time %> <% } %>
+          <% if (appointment.status) { %> (<%= appointment.status %>) <% } %>
+        </a>
+        <a href="/appointments/<%= appointment._id %>/edit" class="button-outline">Edit</a>
+      </li>
       <% }) %>
-    <% } else { %>
+      <% } else { %>
       <p>You have not created any appointments yet.</p>
-    <% } %>
-  </ul>
+      <% } %>
+    </ul>
+  </main>
 </body>
+
 </html>

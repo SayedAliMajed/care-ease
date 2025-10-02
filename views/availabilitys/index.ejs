@@ -1,47 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <link rel="stylesheet" href="/css/style.css" />
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/stylesheets/style.css" />
   <title>Availability List</title>
 </head>
+
 <body>
-  <h2>Availability List</h2>
-  <a href="/availabilitys/new">Add New Availability</a>
-  
-  <table border="1" cellpadding="5" cellspacing="0">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>From - To</th>
-        <th>Slot Duration (mins)</th>
-        <th>Break From - To</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% availabilitys.forEach(function(avail) { %>
-      <tr>
-        <td><%= new Date(avail.date).toDateString() %></td>
-        <td><%= avail.openingTime %> - <%= avail.closingTime %></td>
-        <td><%= avail.duration %></td>
-        <td>
-          <% if (avail.breakStartTime && avail.breakEndTime) { %>
-            <%= avail.breakStartTime %> - <%= avail.breakEndTime %>
-          <% } else { %>
-            None
-          <% } %>
-        </td>
-        <td>
-          <a href="/availabilitys/<%= avail._id %>/edit">Edit</a>
-          <form action="/availabilitys/<%= avail._id %>?_method=DELETE" method="POST" style="display:inline;">
-            <button onclick="return confirm('Are you sure?')" type="submit">Delete</button>
-          </form>
-        </td>
-      </tr>
-      <% }) %>
-    </tbody>
-  </table>
+  <%- include('../partials/_navbar.ejs') %>
+  <main class="container">
+    <h2>Availability List</h2>
+    <a href="/availabilitys/new" class="button-primary">Add New Availability</a>
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>From - To</th>
+          <th>Slot Duration (mins)</th>
+          <th>Break From - To</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% availabilitys.forEach(function(avail) { %>
+        <tr>
+          <td><%= new Date(avail.date).toDateString() %></td>
+          <td><%= avail.openingTime %> - <%= avail.closingTime %></td>
+          <td><%= avail.duration %></td>
+          <td><%= avail.breakStartTime && avail.breakEndTime ? avail.breakStartTime + ' - ' + avail.breakEndTime : 'None' %></td>
+          <td>
+            <a href="/availabilitys/<%= avail._id %>/edit" class="button-outline">Edit</a>
+            <form action="/availabilitys/<%= avail._id %>?_method=DELETE" method="POST" style="display:inline;">
+              <button type="submit" class="button-outline" onclick="return confirm('Are you sure?')">Delete</button>
+            </form>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </main>
+   <%- include('../partials/_footer') %>
 </body>
+
 </html>

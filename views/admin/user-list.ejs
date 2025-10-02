@@ -1,39 +1,46 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <link rel="stylesheet" href="/css/style.css" />
+<html lang="en">
 
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/stylesheets/style.css" />
   <title>User List</title>
 </head>
+
 <body>
-  <h1>Existing Users</h1>
-  <table border="1" cellpadding="8" cellspacing="0">
-    <thead>
-      <tr>
-        <th>Username</th>
-        <th>Email</th>
-        <th>Role</th>
-        <th>Full Name</th>
-        <th>Phone</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% users.forEach(user => { %>
+  <%- include('../partials/_navbar.ejs') %>
+  <main class="container">
+    <h1>Existing Users</h1>
+    <table class="styled-table">
+      <thead>
         <tr>
-          <td><%= user.username %></td>
-          <td><%= user.email %></td>
-          <td><%= user.role %></td>
-          <td><%= user.profile.fullName || '-' %></td>
-          <td><%= user.profile.phone || '-' %></td>
-          <td>
-            <!-- Add Edit/Delete actions URL as per your routing -->
-            <a href="/admin/edit-user/<%= user._id %>">Edit</a> | 
-            <a href="/admin/delete-user/<%= user._id %>" onclick="return confirm('Delete this user?');">Delete</a>
-          </td>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Full Name</th>
+          <th>Phone</th>
+          <th>Actions</th>
         </tr>
-      <% }); %>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        <% users.forEach(user => { %>
+          <tr>
+            <td><%= user.username %></td>
+            <td><%= user.email %></td>
+            <td><%= user.role %></td>
+            <td><%= user.profile.fullName || '-' %></td>
+            <td><%= user.profile.phone || '-' %></td>
+            <td>
+              <a href="/admin/edit-user/<%= user._id %>" class="button-outline">Edit</a> |
+              <a href="/admin/delete-user/<%= user._id %>" class="button-outline" onclick="return confirm('Delete this user?');">Delete</a>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </main>
+   <%- include('../partials/_footer') %>
 </body>
+
 </html>

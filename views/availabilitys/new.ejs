@@ -1,22 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
- <link rel="stylesheet" href="/css/style.css" />
 
+<head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/stylesheets/style.css" />
   <title>New Availability</title>
 </head>
+
 <body>
-  <h2>Add New Availability</h2>
-  <form action="/availabilitys" method="POST">
-    <label>Date: <input type="date" name="date" required /></label><br />
-    <label>Opening Time: <input type="time" name="openingTime" required /></label><br />
-    <label>Closing Time: <input type="time" name="closingTime" required /></label><br />
-    <label>Slot Duration (minutes): <input type="number" name="duration" min="1" required /></label><br />
-    <label>Break Start Time (optional): <input type="time" name="breakStartTime" /></label><br />
-    <label>Break End Time (optional): <input type="time" name="breakEndTime" /></label><br />
-    <button type="submit">Add Availability</button>
-  </form>
-  <a href="/availabilitys">Back to List</a>
+  <%- include('../partials/_navbar.ejs') %>
+  <main class="container">
+    <h2>Add New Availability</h2>
+    <form action="/availabilitys" method="POST">
+      <label>Date:
+        <input type="date" name="date" required />
+      </label>
+
+      <label>Opening Time:
+        <input type="time" name="openingTime" required />
+      </label>
+
+      <label>Closing Time:
+        <input type="time" name="closingTime" required />
+      </label>
+
+      <label>Slot Duration (minutes):
+        <input type="number" name="duration" min="1" required />
+      </label>
+
+      <label>Break Start Time (optional):
+        <input type="time" name="breakStartTime" />
+      </label>
+
+      <label>Break End Time (optional):
+        <input type="time" name="breakEndTime" />
+      </label>
+
+      <button type="submit" class="button-primary">Add Availability</button>
+    </form>
+    <a href="/availabilitys" class="button-outline">Back to List</a>
+  </main>
+   <%- include('../partials/_footer') %>
 </body>
+
 </html>

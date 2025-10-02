@@ -1,31 +1,34 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
- <link rel="stylesheet" href="/css/style.css" />
-
+  <link rel="stylesheet" href="/stylesheets/style.css" />
   <title>Appointment Details</title>
 </head>
+
 <body>
-<%- include('../partials/_navbar.ejs') %>
-  <h1>Appointment Details</h1>
+  <%- include('../partials/_navbar.ejs') %>
+  <main class="container">
+    <h1>Appointment Details</h1>
+    <p><strong>Date:</strong> <%= new Date(appointment.date).toLocaleDateString() %></p>
+    <p><strong>Time:</strong> <%= appointment.time %></p>
+    <p><strong>Duration:</strong> <%= appointment.duration %> minutes</p>
+    <p><strong>Status:</strong> <%= appointment.status %></p>
 
-  <p><strong>Date:</strong> <%= new Date(appointment.date).toLocaleDateString() %></p>
-  <p><strong>Time:</strong> <%= appointment.time %></p>
-  <p><strong>Duration:</strong> <%= appointment.duration %> minutes</p>
-  <p><strong>Status:</strong> <%= appointment.status %></p>
-
-  <% if (user.role !== 'patient') { %>
+    <% if (user.role !== 'patient') { %>
     <p><strong>Prescription:</strong> <%= appointment.prescription || 'No prescription available' %></p>
     <p><strong>Doctor Comments:</strong> <%= appointment.doctorComments || 'No comments' %></p>
-  <% } %>
+    <% } %>
 
-  <form action="/appointments/<%= appointment._id%>?_method=DELETE" method="post">
-    <button type="submit"> Delete this appointment</button>
-  </form>  
-  <a href="/appointments/<%= appointment._id %>/edit">Edit</a> 
-  <a href="/appointments">Back to List</a>
+    <form action="/appointments/<%= appointment._id %>?_method=DELETE" method="post">
+      <button type="submit" class="button-outline" onclick="return confirm('Are you sure you want to delete?')">Delete this appointment</button>
+    </form>
+
+    <a href="/appointments/<%= appointment._id %>/edit" class="button-outline">Edit</a>
+    <a href="/appointments" class="button-outline">Back to List</a>
+  </main>
 </body>
+
 </html>

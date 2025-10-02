@@ -1,64 +1,599 @@
-/* Style for the whole body */
-body {
-  font-family: 'Arial', sans-serif;
-  background-color: #f4f4f4; /* Light background color */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh; /* Full viewport height */
+/* ================================
+   CSS VARIABLES (THEME)
+================================ */
+:root {
+  --primary-color: #0073e6;
+  --primary-color-dark: #005f9e;
+  --text-color: #333;
+  --heading-color: #004777;
+  --background-light: #f9fafd;
+  --background-muted: #f0f4fa;
+  --border-color: #a8c6f7;
+  --border-radius: 6px;
+  --spacing: 1rem;
+  --max-container-width: 1100px;
+  --font-family: Arial, sans-serif;
+}
+
+/* ================================
+   RESET & BASE STYLES
+================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
   margin: 0;
+  font-family: var(--font-family);
+  font-size: 1rem;
+  line-height: 1.5;
+  background-color: var(--background-light);
+  color: var(--text-color);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Container for the form */
-form {
-  background-color: #fff; /* White background for the form */
-  padding: 40px;
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  max-width: 400px;
-  width: 100%;
+a {
+  color: var(--primary-color);
+  text-decoration: none;
 }
 
-/* Heading style */
-h1 {
-  text-align: center;
-  margin-bottom: 20px;
-  color: #333;
+a:hover,
+a:focus {
+  text-decoration: underline;
 }
 
-/* Labels style */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 1rem;
+  outline-offset: 2px;
+}
+
+/* ================================
+   TYPOGRAPHY & LABELS
+================================ */
+h1, h2, h3, h4 {
+  color: var(--heading-color);
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+strong {
+  color: #002b40;
+}
+
+/* Apply global label style:
+   display block and left aligned */
 label {
   display: block;
-  margin-bottom: 8px;
+  width: 100%;
+  margin-bottom: 0.4em;
   font-weight: 600;
-  color: #555;
+  color: #005f9e;
+  text-align: left;
 }
 
-/* Input fields style */
-input[type="text"],
-input[type="password"] {
+/* Optional colon after labels */
+label::after {
+  content: ":";
+  margin-left: 0.15em;
+}
+
+/* ================================
+   GLOBAL CONTAINER
+================================ */
+.container {
+  width: 90%;
+  max-width: var(--max-container-width);
+  margin: var(--spacing) auto;
+  padding: var(--spacing);
+  background: #fff;
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* ================================
+   NAVIGATION
+================================ */
+nav {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.625rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+nav p {
+  margin: 0;
+  font-weight: bold;
+}
+
+nav a {
+  color: white;
+  margin-left: 1rem;
+  font-weight: 600;
+}
+
+nav a:hover,
+nav a:focus {
+  text-decoration: underline;
+}
+
+/* ================================
+   FORMS - shared input styles
+================================ */
+form input[type="text"],
+form input[type="email"],
+form input[type="password"],
+form select,
+form textarea {
   width: 100%;
-  padding: 12px;
-  margin-bottom: 20px;
-  border: 1px solid #ccc;
+  padding: 0.5rem 0.625rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
-  font-size: 16px;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
 }
 
-/* Button style */
-button[type="submit"] {
-  width: 100%;
-  padding: 14px;
-  background-color: #4CAF50; /* Green color */
-  color: #fff;
+form input:focus,
+form select:focus,
+form textarea:focus {
+  border-color: var(--primary-color-dark);
+  box-shadow: 0 0 5px rgba(92,138,230,0.7);
+  outline: none;
+}
+
+form textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* ================================
+   BUTTONS
+================================ */
+.button-primary,
+button.button-primary {
+  background-color: var(--primary-color);
   border: none;
+  color: white;
+  padding: 0.625rem 1.125rem;
   border-radius: 4px;
-  font-size: 16px;
   cursor: pointer;
+  font-weight: 700;
+  transition: background-color 0.3s ease;
+  display: inline-block;
+  text-align: center;
+  text-decoration: none;
+  user-select: none;
+}
+
+.button-primary:hover,
+button.button-primary:hover,
+.button-primary:focus,
+button.button-primary:focus {
+  background-color: var(--primary-color-dark);
+  outline: none;
+}
+
+.button-outline,
+button.button-outline {
+  background-color: transparent;
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+  user-select: none;
+}
+
+.button-outline:hover,
+button.button-outline:hover,
+.button-outline:focus,
+button.button-outline:focus {
+  background-color: var(--primary-color);
+  color: white;
+  outline: none;
+}
+
+.btn-large {
+  padding: 0.875rem 1.875rem;
+  font-size: 1.2rem;
+  border-radius: 30px;
+}
+
+/* ================================
+   TABLES
+================================ */
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 1rem;
+  min-width: 400px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.1);
+}
+
+.styled-table thead tr {
+  background-color: var(--primary-color);
+  color: #fff;
+  text-align: left;
+  font-weight: bold;
+}
+
+.styled-table th,
+.styled-table td {
+  padding: 0.75rem 1rem;
+  border: 1px solid #ddd;
+}
+
+.styled-table tbody tr {
+  border-bottom: 1px solid #ddd;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+  background-color: #f3f8ff;
+}
+
+.styled-table tbody tr:last-of-type {
+  border-bottom: 2px solid var(--primary-color);
+}
+
+.styled-table tbody tr:hover {
+  background-color: #dbeaff;
+}
+
+/* ================================
+   APPOINTMENTS LIST
+================================ */
+.appointments-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.appointments-list li {
+  background: #e3f0fc;
+  margin-bottom: 0.625rem;
+  padding: 0.75rem;
+  border-radius: 5px;
   transition: background-color 0.3s ease;
 }
 
-/* Button hover effect */
-button[type="submit"]:hover {
-  background-color: #45a049;
+.appointments-list li:hover,
+.appointments-list li:focus-within {
+  background: #c3ddfc;
+}
+
+.appointments-list li a {
+  font-weight: 600;
+  color: #005f9e;
+  margin-right: 0.625rem;
+}
+
+.appointments-list li a.button-outline {
+  font-weight: normal;
+  font-size: 0.9rem;
+  padding: 0.375rem 0.75rem;
+}
+
+/* ================================
+   HOMEPAGE SECTIONS
+================================ */
+.hero-section {
+  background: url('/images/hero-medical-bg.jpg') center center/cover no-repeat;
+  color: white;
+  padding: 5rem 1.25rem;
+  text-align: center;
+  border-radius: 8px;
+  margin-bottom: 3rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.hero-content h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.hero-content p {
+  font-size: clamp(1rem, 3vw, 1.4rem);
+  margin-bottom: 1.5rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.features-section {
+  margin-bottom: 3.75rem;
+}
+
+.features-section h2 {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  color: var(--heading-color);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+  text-align: center;
+}
+
+@media (min-width: 600px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .features-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.feature-card {
+  background: #eef6fc;
+  padding: 1.25rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover,
+.feature-card:focus-within {
+  transform: translateY(-8px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.feature-card img {
+  width: 70px;
+  margin-bottom: 1rem;
+}
+
+.about-section {
+  background: #f0f8ff;
+  padding: 2.5rem 1.875rem;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+  text-align: center;
+}
+
+.about-section h2 {
+  color: var(--primary-color);
+  margin-bottom: 1.25rem;
+}
+
+.footer {
+  background: var(--primary-color);
+  color: white;
+  text-align: center;
+  padding: 1rem 0;
+  margin-top: 3.75rem;
+  font-size: 0.9rem;
+  border-radius: 0 0 var(--border-radius) var(--border-radius);
+}
+
+/* ================================
+   SIGN-IN PAGE
+================================ */
+.signin-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  padding: 1.25rem;
+  background-color: var(--background-muted);
+  box-sizing: border-box;
+}
+
+.signin-box {
+  background: #fff;
+  padding: 2rem 2.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.signin-box h2 {
+  margin-bottom: 1.25rem;
+  color: var(--heading-color);
+}
+
+.signin-box form input[type="email"],
+.signin-box form input[type="password"],
+.signin-box form input[type="text"] {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+.signin-box form button {
+  width: 100%;
+  padding: 0.75rem;
+  font-weight: 700;
+  background: var(--primary-color);
+  border: none;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  user-select: none;
+}
+
+.signin-box form button:hover,
+.signin-box form button:focus {
+  background: var(--primary-color-dark);
+  outline: none;
+}
+
+.signin-box p {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+/* ================================
+   SIGN-UP PAGE
+================================ */
+.signup-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  padding: 1.25rem;
+  background-color: var(--background-muted);
+  box-sizing: border-box;
+}
+
+.signup-box {
+  background: #fff;
+  padding: 2rem 2.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.signup-box h2 {
+  margin-bottom: 1.25rem;
+  color: var(--heading-color);
+}
+
+.signup-box form input[type="text"],
+.signup-box form input[type="email"],
+.signup-box form input[type="password"],
+.signup-box form select,
+.signup-box form textarea {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+.signup-box form input:focus,
+.signup-box form select:focus,
+.signup-box form textarea:focus {
+  border-color: var(--primary-color-dark);
+  box-shadow: 0 0 5px rgba(92,138,230,0.7);
+  outline: none;
+}
+
+.signup-box form button {
+  width: 100%;
+  padding: 0.75rem;
+  font-weight: 700;
+  background: var(--primary-color);
+  border: none;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  user-select: none;
+}
+
+.signup-box form button:hover,
+.signup-box form button:focus {
+  background: var(--primary-color-dark);
+  outline: none;
+}
+
+.signup-box p {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+input[type="text"],
+select,
+textarea {
+  width: 100%;
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+
+/* ================================
+   HEADER SPACING
+================================ */
+header, nav {
+  margin-bottom: 1.5rem; /* Adds space below header/navbar */
+  padding-bottom: 0.5rem; /* Optional: small padding for breathing */
+  border-bottom: 1px solid #e0e0e0; /* Optional: subtle divider line */
+}
+
+/* ================================
+   CONTAINER AND FORM SPACING
+================================ */
+.container {
+  margin-top: 1.5rem; /* Space above container content */
+  margin-bottom: 1.5rem; /* Space below container if needed */
+  padding: var(--spacing);
+  max-width: var(--max-container-width);
+  width: 90%;
+  background: #fff;
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-sizing: border-box;
+}
+
+/* Separate spacing for sign-in, sign-up containers */
+.signin-container,
+.signup-container {
+  margin-top: 2rem; /* Add some space below the header/navbar */
+  padding: 1.25rem;
+  background-color: var(--background-muted);
+  box-sizing: border-box;
+}
+
+/* Optionally adjust titles and headings spacing inside forms */
+.signin-box h2,
+.signup-box h2,
+.container h1, .container h2 {
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+}
+
+section, .container, .appointments-list, .features-section, .about-section {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+h1, h2, h3, h4 {
+  margin-bottom: 1rem;
 }

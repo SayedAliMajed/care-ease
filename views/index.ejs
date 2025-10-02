@@ -1,26 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <link rel="stylesheet" href="/css/style.css" />
-
-  <title>Home Page</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/stylesheets/style.css" />
+  <title>Medical Center | Home</title>
 </head>
 <body>
-  <%- include('./partials/_navbar.ejs') %>
-<% if (user) { %>
-<h1>Welcome to the app, <%= user.username %>!</h1>
-<p>
-  <a href="/auth/sign-out">Sign out</a>
-</p>
-<% } else { %>
-<h1>Welcome to the app, guest.</h1>
-<p>
-  <a href="/auth/sign-up">Sign up</a> or <a href="/auth/sign-in">Sign in</a>.
-</p>
-<% } %>
+  <%- include('partials/_navbar') %>
 
+  <header class="hero-section">
+    <div class="hero-content container">
+      <h1>Leading Healthcare, Trusted Care</h1>
+      <p>Your health is our priority. Comprehensive medical services with expertise & compassion.</p>
+      <a href="/appointments/new" class="button-primary btn-large">Book an Appointment</a>
+    </div>
+  </header>
 
+  <main class="container">
+    <section class="features-section">
+      <h2>Our Core Services</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <img src="/images/emergency-icon.png" alt="Emergency"/>
+          <h3>24/7 Emergency</h3>
+          <p>Round the clock emergency services with quick response and expert care.</p>
+        </div>
+        <div class="feature-card">
+          <img src="/images/specialists-icon.png" alt="Specialists"/>
+          <h3>Experienced Specialists</h3>
+          <p>Board-certified doctors providing specialized treatments.</p>
+        </div>
+        <div class="feature-card">
+          <img src="/images/technology-icon.png" alt="Technology"/>
+          <h3>Cutting Edge Technology</h3>
+          <p>State-of-the-art diagnostic and surgical equipment ensuring accurate care.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="about-section">
+      <h2>About Our Medical Center</h2>
+      <p>At our center, we combine advanced technology with compassionate care to offer patients the best healthcare experience. Our facilities are designed for comfort and efficiency, supporting every step of your wellness journey.</p>
+      <a href="/about" class="button-outline">Learn More</a>
+    </section>
+  </main>
+
+  <%- include('partials/_footer') %>
 </body>
 </html>

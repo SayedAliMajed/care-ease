@@ -1,64 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="/css/style.css" />
-
+  <link rel="stylesheet" href="/stylesheets/style.css" />
   <title>Doctor Dashboard</title>
- 
 </head>
+
 <body>
+  <%- include('../partials/_navbar.ejs') %>
+  <main class="container">
+    <header>
+      <h1>Welcome, Dr. <%= user?.username || 'Doctor' %></h1>
+    </header>
+    <section>
+      <h2>Upcoming Appointments</h2>
 
-  <header>
-    <h1>Welcome, Dr. <%= user?.username || 'Doctor' %></h1>
-
-  </header>
-
-  <section>
-    <h2>Upcoming Appointments</h2>
-
-    <% if (appointments && appointments.length > 0) { %>
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Time Slot</th>
-            <th>Patient</th>
-            <th>Reason</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% appointments.forEach(appointment => { %>
+      <% if (appointments && appointments.length > 0) { %>
+        <table class="styled-table">
+          <thead>
             <tr>
-              <td><%= new Date(appointment.date).toDateString() %></td>
-              <td><%= appointment.time %></td>
-              <td><%= appointment.patientName %></td>
-              <td><%= appointment.reason || 'N/A' %></td>
-              <td>
-                <% if (appointment.status === 'scheduled') { %>
-                  Scheduled
-                <% } else if (appointment.status === 'completed') { %>
-                  Completed
-                <% } else if (appointment.status === 'cancelled') { %>
-                  Cancelled
-                <% } else { %>
-                  Unknown
-                <% } %>
-              </td>
+              <th>Date</th>
+              <th>Time Slot</th>
+              <th>Patient</th>
+              <th>Reason</th>
+              <th>Status</th>
             </tr>
-          <% }) %>
-        </tbody>
-      </table>
-    <% } else { %>
-      <p>No upcoming appointments.</p>
-    <% } %>
-  </section>
-
-  <footer>
-    <p>CareEase © 2025</p>
-  </footer>
-
+          </thead>
+          <tbody>
+            <% appointments.forEach(appointment => { %>
+              <tr>
+                <td><%= new Date(appointment.date).toDateString() %></td>
+                <td><%= appointment.time %></td>
+                <td><%= appointment.patientName %></td>
+                <td><%= appointment.reason || 'N/A' %></td>
+                <td>
+                  <% if (appointment.status === 'scheduled') { %>Scheduled<% } 
+                     else if (appointment.status === 'completed') { %>Completed<% } 
+                     else if (appointment.status === 'cancelled') { %>Cancelled<% } 
+                     else { %>Unknown<% } %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } else { %>
+        <p>No upcoming appointments.</p>
+      <% } %>
+    </section>
+    <footer>
+      <p>CareEase © 2025</p>
+    </footer>
+  </main>
+   <%- include('../partials/_footer') %>
 </body>
+
 </html>
