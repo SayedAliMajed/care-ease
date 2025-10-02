@@ -3,45 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Book a New Appointment</title>
-  <link rel="stylesheet" href="/stylesheets/style.css" />
+  <title>Book New Appointment</title>
 </head>
 <body>
-
-  <%- include('../partials/_navbar.ejs') %>
-
   <h1>Book a New Appointment</h1>
-
-  <form method="POST" action="/appointments">
-    <p>
-      Name: <strong><%= user.profile.fullName ? user.profile.fullName : 'Not Available'%></strong>
-      <input type="hidden" name="patientName" value="<%= user.profile.fullName || '' %>" />
-    </p>
-
-    <p>
-      CPR: <strong><%= user.profile.cpr ? user.profile.cpr : 'Not Available' %></strong>
-      <input type="hidden" name="cpr" value="<%= user.profile.cpr || '' %>" />
-    </p>
-
-    <label for="availabilityId">Available Date & Time Slot:</label>
-    <select id="availabilityId" name="availabilityId" required>
-      <option value="" disabled selected>Select a date and time slot</option>
-      <% availabilities.forEach(avail => { %>
-        <option value="<%= avail._id %>">
-          <%= avail.date.toDateString() %> - From <%= avail.openingTime %> to <%= avail.closingTime %>
-        </option>
+  <%- include('../partials/_navbar.ejs') %>
+  <form action="/appointments" method="POST">
+    
+    <label for="doctor_id">Select Doctor:</label>
+    <select name="doctor_id" id="doctor_id" required>
+      <% doctors.forEach(doctor => { %>
+        <option value="<%= doctor._id %>"><%= doctor.profile.fullName %></option>
       <% }) %>
     </select>
 
-    <label for="slotTime">Select Slot Time:</label>
-    <select id="slotTime" name="slotTime" required>
-      <% availableSlots.forEach(slot => { %>
-        <option value="<%= slot %>"><%= slot %></option>
+    <label for="availabilityId">Select Date & Slot:</label>
+    <select name="availabilityId" id="availabilityId" required>
+      <% availabilities.forEach(slot => { %>
+        <option value="<%= slot._id %>"><%= slot.date.toDateString() %> - <%= slot.openingTime %> to <%= slot.closingTime %></option>
+      <% }) %>
+    </select>
+
+    <label for="slotTime">Select Time Slot:</label>
+    <select name="slotTime" id="slotTime" required>
+      <% availableSlots.forEach(time => { %>
+        <option value="<%= time %>"><%= time %></option>
       <% }) %>
     </select>
 
     <button type="submit">Book Appointment</button>
   </form>
-
 </body>
 </html>

@@ -42,12 +42,24 @@ app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     store: MongoStore.create({
       mongoUrl: process.env.MONGODB_URI,
+      ttl: 14 * 24 * 60 * 60 // session lifetime, 14 days
     }),
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
+      secure: false, // true if HTTPS
+      httpOnly: true,
+    },
   })
 );
+
+app.use((req, res, next) => {
+  console.log('Session:', req.session);
+  next();
+});
+
 app.use(passUserToView);
 
 // PUBLIC

@@ -13,6 +13,15 @@ const permissions = {
   patient: { appointments: ['create', 'read', 'update'], users: [] },
 };
 
+router.get('/employee', (req, res) => {
+  
+  if (!req.session.user) {
+    return res.redirect('/auth/sign-in');
+  }
+  res.render('dashboard/employee', { user: req.session.user });
+});
+
+
 // Role check middleware
 function isAdmin(req, res, next) {
   if (req.session?.user?.role === 'admin') return next();

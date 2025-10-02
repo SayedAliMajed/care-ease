@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Employee Dashboard</title>
+</head>
+<body>
+
+  <%- include('../partials/_navbar.ejs') %>
+ <a href="/auth/sign-out">Sign Out</a>
+  <h1>Employee Dashboard</h1>
+  <p>Welcome, <%= user?.profile?.fullName || 'Employee' %></p>
+
+  <div>
+    <button onclick="location.href='/appointments'" >
+      View Appointments
+    </button>
+    <button onclick="location.href='/appointments/create'" >
+      Create Appointment
+    </button>
+  </div>
+
+  <div>
+    <h3>Manage your tasks</h3>
+    <p>Use the buttons above to manage appointments and your daily tasks.</p>
+  </div>
+
+</body>
+</html>

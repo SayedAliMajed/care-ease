@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const authorize = require('../middleware/authorize');
+const User = require('../models/user');
 const Availability = require('../models/availability');
 const Appointment = require('../models/appointment');
 
@@ -65,12 +66,19 @@ router.get('/availability/:availabilityId', authorize('appointments', 'read'), a
 router.get('/', authorize('appointments', 'read'), async (req, res) => {
   try {
     const user = req.session.user;
-    if (!user) {
-      return res.redirect('/auth/sign-in'); 
-    }
+    if (!user) return res.redirect('/auth/sign-in');
 
-  
-    const appointments = await Appointment.find({ patient_id: user._id }).sort({ date: 1 });
+    let appointments;
+
+    if (user.role === 'patient') {
+      appointments = await Appointment.find({ patient_id: user._id })
+        .select('-prescription')
+        .sort({ date: 1 });
+    } else if (['doctor', 'employee', 'admin'].includes(user.role)) {
+      appointments = await Appointment.find()
+        .sort({ date: 1 })
+        .populate('patient_id', 'profile.fullName');
+    }
 
     res.render('appointments/index', {
       user,
@@ -82,10 +90,10 @@ router.get('/', authorize('appointments', 'read'), async (req, res) => {
   }
 });
 
-
-
 router.get('/new', authorize('appointments', 'create'), async (req, res) => {
   try {
+  
+    const doctors = await User.find({ role: 'doctor' }).select('profile.fullName').lean();
     const availabilities = await Availability.find({}).sort({ date: 1, openingTime: 1 });
 
     let availableSlots = [];
@@ -94,62 +102,55 @@ router.get('/new', authorize('appointments', 'create'), async (req, res) => {
       availableSlots = generateSlots(firstAvailability);
     }
 
-    res.render('appointments/new', { availabilities, availableSlots, user: req.session.user });
+    res.render('appointments/new', { 
+      doctors,
+      availabilities,
+      availableSlots,
+      user: req.session.user
+    });
   } catch (error) {
     console.error(error);
     res.redirect('/appointments');
   }
 });
 
-
 router.post('/', authorize('appointments', 'create'), async (req, res) => {
   try {
-    const { slotTime, availabilityId } = req.body;
+    const { slotTime, availabilityId, doctor_id } = req.body; 
 
-    
-    const patientName = req.session.user.profile.fullName;
-    const cpr = req.session.user.profile.cpr;
     const patient_id = req.session.user._id;
 
-    if (!slotTime || !availabilityId || !patientName || !cpr) {
-      return res.send('Missing required appointment fields');
+    if (!slotTime || !availabilityId || !doctor_id) {
+      return res.send('Missing required fields');
     }
 
-   
     const existingAppointment = await Appointment.findOne({
       availabilityId,
-      slotTime,
+      time: slotTime,
+      employee_id: doctor_id,
     });
-
     if (existingAppointment) {
-      return res.send('Selected time slot is already booked');
-    }
-
-    let duration = 20;
-    let prescription = '';
-    if (req.session.user.role !== 'patient') {
-      duration = req.body.duration || 20;
-      prescription = req.body.prescription || '';
+      return res.send('Selected slot already booked');
     }
 
     const appointmentData = {
       availabilityId,
       patient_id,
-      slotTime,
-      patientName,
-      cpr,
-      duration,
-      prescription,
-      date: req.body.date || new Date(),
+      employee_id: doctor_id, 
+      time: slotTime,
+      date: new Date(req.body.date),
+      
     };
 
     await Appointment.create(appointmentData);
     res.redirect('/appointments');
+
   } catch (error) {
     console.log(error);
     res.redirect('/');
   }
 });
+
 
 
 router.put('/:appointmentId', authorize('appointments', 'update'), async (req, res) => {

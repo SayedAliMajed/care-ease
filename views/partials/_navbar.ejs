@@ -1,7 +1,23 @@
 <nav>
-  <% if (user) { %>
-    <a href="/appointments">View My appointments</a>
+  <% if (user && user.profile && user.profile.fullName) { %>
+    <p>Welcome, <%= user.profile.fullName %></p>
+
+    <% if (user.role === 'patient') { %>
+      <a href="/appointments">View My appointments</a>
+    <% } else if (user.role === 'doctor') { %>
+      <a href="/doctor/dashboard">Doctor Dashboard</a>
+      <a href="/appointments">Manage Appointments</a>
+    <% } else if (user.role === 'employee') { %>
+      <a href="/employee/dashboard">Employee Dashboard</a>
+      <a href="/appointments">Manage Appointments</a>
+    <% } else if (user.role === 'admin') { %>
+      <a href="/admin/dashboard">Admin Dashboard</a>
+      <a href="/appointments">All Appointments</a>
+      <a href="/admin/users">Manage Users</a>
+    <% } %>
+
     <a href="/auth/sign-out">Sign Out</a>
+
   <% } else { %>
     <a href="/auth/sign-up">Sign Up</a>
     <a href="/auth/sign-in">Sign In</a>
