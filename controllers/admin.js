@@ -48,11 +48,8 @@ function authorizeAction(model, action) {
 router.get('/create-user', isAdmin, (req, res) => {
   res.render('admin/create-user.ejs');
 });
-router.post(
-  '/create-user',
-  isAdmin,
-  authorizeAction('users', 'create'),
-  async (req, res) => {
+
+router.post('/create-user',isAdmin,authorizeAction('users', 'create'),async (req, res) => {
     try {
       const { username, email, password, confirmPassword, role, fullName, phone, address, department, specialty } = req.body;
       if (!username || !email || !password || !role) {
@@ -77,6 +74,7 @@ router.post(
     }
   }
 );
+
 router.get('/users', isAdmin, authorizeAction('users', 'read'), async (req, res) => {
   try {
     const users = await User.find();
@@ -159,7 +157,7 @@ router.get('/dashboard', async (req, res) => {
   }
 });
 
-// DELETE user by ID
+
 router.post('/delete-user/:userId', isAdmin, authorizeAction('users', 'delete'), async (req, res) => {
   try {
     const userId = req.params.userId;

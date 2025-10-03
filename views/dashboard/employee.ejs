@@ -13,15 +13,20 @@
   <main class="container">
     <h1>Employee Dashboard</h1>
     <div>
-      <button onclick="location.href='/appointments'" class="button-primary">View Appointments</button>
+      <button
+        onclick="location.href='/appointments?dateFrom=<%= new Date().toISOString().slice(0,10) %>&dateTo=<%= new Date().toISOString().slice(0,10) %>'"
+        class="button-primary">
+        View Today's Appointments
+      </button>
+      <button onclick="location.href='/appointments/search-patients'" class="button-primary">Search Patients</button>
       <button onclick="location.href='/appointments/new'" class="button-primary">Create Appointment</button>
     </div>
     <section>
       <h3>Manage your tasks</h3>
-      <p>Use the buttons above to manage appointments and your daily tasks.</p>
+      <p>Use the buttons above to manage appointments, search patients, and your daily tasks.</p>
     </section>
   </main>
-   <%- include('../partials/_footer') %>
+  <%- include('../partials/_footer') %>
 </body>
 
 </html>

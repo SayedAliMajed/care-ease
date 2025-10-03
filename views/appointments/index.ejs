@@ -11,24 +11,108 @@
 <body>
   <%- include('../partials/_navbar.ejs') %>
   <main class="container">
-    <a href="/appointments/new" class="button-outline">Add New Appointment</a>
-    <h1>Your Appointments List</h1>
-    <ul class="appointments-list">
-      <% if (appointments && appointments.length > 0) { %>
-      <% appointments.forEach((appointment) => { %>
-      <li>
-        <a href="/appointments/<%= appointment._id %>">
-          <%= new Date(appointment.date).toLocaleDateString() %>
-          <% if (appointment.time) { %> - <%= appointment.time %> <% } %>
-          <% if (appointment.status) { %> (<%= appointment.status %>) <% } %>
-        </a>
-        <a href="/appointments/<%= appointment._id %>/edit" class="button-outline">Edit</a>
-      </li>
-      <% }) %>
-      <% } else { %>
-      <p>You have not created any appointments yet.</p>
-      <% } %>
-    </ul>
+
+    <h1>Your Appointments</h1>
+
+    <% if (user.role === 'employee' || user.role === 'admin') { %>
+      <a href="/appointments/new" class="button-outline">Add New Appointment</a>
+
+      <form method="GET" action="/appointments" class="filter-form">
+        <label for="status">Status:</label>
+        <select id="status" name="status">
+          <option value="" <%= !filters.status ? 'selected' : '' %>>All</option>
+          <option value="pending" <%= filters.status === 'pending' ? 'selected' : '' %>>Pending</option>
+          <option value="confirmed" <%= filters.status === 'confirmed' ? 'selected' : '' %>>Confirmed</option>
+          <option value="cancelled" <%= filters.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
+          <option value="completed" <%= filters.status === 'completed' ? 'selected' : '' %>>Completed</option>
+        </select>
+
+        <label for="dateFrom">From:</label>
+        <input type="date" id="dateFrom" name="dateFrom" value="<%= filters.dateFrom || '' %>">
+
+        <label for="dateTo">To:</label>
+        <input type="date" id="dateTo" name="dateTo" value="<%= filters.dateTo || '' %>">
+
+        <% if (doctors && doctors.length) { %>
+          <label for="doctorId">Doctor:</label>
+          <select id="doctorId" name="doctorId">
+            <option value="" <%= !filters.doctorId ? 'selected' : '' %>>All</option>
+            <% doctors.forEach(doctor => { %>
+              <option value="<%= doctor._id %>" <%= filters.doctorId === doctor._id.toString() ? 'selected' : '' %>>
+                <%= doctor.profile.fullName %>
+              </option>
+            <% }) %>
+          </select>
+        <% } %>
+
+        <button type="submit">Filter</button>
+      </form>
+
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>Patient Name</th>
+            <th>CPR</th>
+            <th>Phone</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Doctor</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (appointments.length) { %>
+            <% appointments.forEach(app => { %>
+              <tr>
+                <td><%= app.patient_id?.profile.fullName || 'N/A' %></td>
+                <td><%= app.patient_id?.profile.cpr || 'N/A' %></td>
+                <td><%= app.patient_id?.profile.phone || 'N/A' %></td>
+                <td><%= new Date(app.date).toLocaleDateString() %></td>
+                <td><%= app.time || app.slotTime %></td>
+                <td><%= app.employee_id?.profile.fullName || 'N/A' %></td>
+                <td><%= app.status || 'Unknown' %></td>
+                <td>
+                  <a href="/appointments/<%= app._id %>/edit" class="button-outline">Edit</a>
+                  <form action="/appointments/<%= app._id %>?_method=DELETE" method="POST" style="display:inline;">
+                    <button type="submit" onclick="return confirm('Are you sure you want to delete this appointment?');">
+                      Delete
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+          <% } else { %>
+            <tr><td colspan="8">No appointments found with the selected criteria.</td></tr>
+          <% } %>
+        </tbody>
+      </table>
+
+    <% } else if (user.role === 'patient') { %>
+
+      <a href="/appointments/new" class="button-outline">Add New Appointment</a>
+
+      <ul class="appointments-list">
+        <% if (appointments && appointments.length > 0) { %>
+          <% appointments.forEach((appointment) => { %>
+            <li>
+              <a href="/appointments/<%= appointment._id %>">
+                <%= new Date(appointment.date).toLocaleDateString() %>
+                <% if (appointment.time) { %> - <%= appointment.time %> <% } %>
+                <% if (appointment.status) { %> (<%= appointment.status %>) <% } %>
+              </a>
+              <a href="/appointments/<%= appointment._id %>/edit" class="button-outline">Edit</a>
+            </li>
+          <% }) %>
+        <% } else { %>
+          <p>You have not created any appointments yet.</p>
+        <% } %>
+      </ul>
+
+    <% } else { %>
+      <p>Unauthorized access.</p>
+    <% } %>
+
   </main>
 </body>
 

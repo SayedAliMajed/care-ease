@@ -6,6 +6,14 @@ const User = require('../models/user');
 const Availability = require('../models/availability');
 const Appointment = require('../models/appointment');
 
+// Middleware to allow employees and admins only
+function employeeOrAdmin(req, res, next) {
+  const role = req.session.user?.role;
+  if (role === 'employee' || role === 'admin') return next();
+  return res.status(403).send('Forbidden');
+}
+
+// Use existing role-based authorization for read permissions globally
 router.use(authorize('appointments', 'read'));
 
 function toMinutes(timeStr) {
@@ -39,30 +47,29 @@ function generateSlots(availability) {
   return slots;
 }
 
+// Get available slots by availabilityId
 router.get('/availability/:availabilityId', authorize('appointments', 'read'), async (req, res) => {
   try {
-    const availability = await Availability.findById(req.params.availabilityId);
+    const availability = await Availability.findById(req.params.availabilityId).lean();
     if (!availability) return res.status(404).send('Availability not found');
 
     let possibleSlots = generateSlots(availability);
     const bookedAppointments = await Appointment.find({
       availabilityId: availability._id,
       date: availability.date,
-    });
+    }).lean();
 
-    const bookedTimes = bookedAppointments.map(app => app.slotTime);
+    const bookedTimes = bookedAppointments.map(app => app.slotTime || app.time);
     const availableSlots = possibleSlots.filter(slot => !bookedTimes.includes(slot));
 
-    res.render('appointments/slots', {
-      availability,
-      availableSlots,
-    });
+    res.render('appointments/slots', { availability, availableSlots });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.redirect('/');
   }
 });
 
+// List appointments by role
 router.get('/', authorize('appointments', 'read'), async (req, res) => {
   try {
     const user = req.session.user;
@@ -73,40 +80,108 @@ router.get('/', authorize('appointments', 'read'), async (req, res) => {
     if (user.role === 'patient') {
       appointments = await Appointment.find({ patient_id: user._id })
         .select('-prescription')
-        .sort({ date: 1 });
+        .sort({ date: 1 })
+        .lean();
     } else if (['doctor', 'employee', 'admin'].includes(user.role)) {
       appointments = await Appointment.find()
         .sort({ date: 1 })
-        .populate('patient_id', 'profile.fullName');
+        .populate('patient_id', 'profile.fullName')
+        .lean();
     }
 
-    res.render('appointments/index', {
-      user,
-      appointments,
-    });
+    res.render('appointments/index', { user, appointments });
   } catch (error) {
     console.error(error);
     res.redirect('/');
   }
 });
 
+// Patient Search Routes for employee/admin
+
+// Search form
+router.get('/search-patients', employeeOrAdmin, (req, res) => {
+  res.render('appointments/search-patients', { query: '', patients: [], message: null });
+});
+
+// Search results with improved flexible query for fullName or CPR
+router.get('/search-patients/results', employeeOrAdmin, async (req, res) => {
+  try {
+    let query = req.query.q?.trim() || '';
+
+    if (!query) {
+      return res.render('appointments/search-patients', {
+        patients: [],
+        query,
+        message: 'Please enter a search query',
+      });
+    }
+
+    // Escape regex special characters to build safe regex
+    const escapedQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const regex = new RegExp(escapedQuery, 'i');
+
+    const patients = await User.find({
+      role: 'patient',
+      $or: [
+        { 'profile.cpr': { $regex: regex } },       // partial CPR match
+        { 'profile.fullName': { $regex: regex } },  // flexible fullName match
+      ],
+    }).lean();
+
+    res.render('appointments/search-patients', {
+      patients,
+      query,
+      message: patients.length ? null : `No patients found for "${query}"`,
+    });
+  } catch (error) {
+    console.error('Patient search error:', error);
+    res.status(500).send('Server error');
+  }
+});
+
+// Patient history view with appointments and prescriptions
+router.get('/patient-history/:patientId', employeeOrAdmin, async (req, res) => {
+  try {
+    const patientId = req.params.patientId;
+    const patient = await User.findById(patientId).lean();
+    if (!patient || patient.role !== 'patient') {
+      return res.status(404).send('Patient not found');
+    }
+
+    const appointments = await Appointment.find({ patient_id: patientId })
+      .populate('employee_id', 'profile.fullName')
+      .lean();
+
+    res.render('appointments/patient-history', { patient, appointments });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+});
+
+// Appointment creation form for employee/admin booking for a patient
 router.get('/new', authorize('appointments', 'create'), async (req, res) => {
   try {
-  
     const doctors = await User.find({ role: 'doctor' }).select('profile.fullName').lean();
-    const availabilities = await Availability.find({}).sort({ date: 1, openingTime: 1 });
+    const availabilities = await Availability.find({}).sort({ date: 1, openingTime: 1 }).lean();
 
     let availableSlots = [];
     if (availabilities.length) {
-      const firstAvailability = availabilities[0];
-      availableSlots = generateSlots(firstAvailability);
+      availableSlots = generateSlots(availabilities[0]);
     }
 
-    res.render('appointments/new', { 
+    const patientId = req.query.patientId;
+    let selectedPatient = null;
+    if (patientId) {
+      selectedPatient = await User.findOne({ _id: patientId, role: 'patient' }).lean();
+    }
+
+    res.render('appointments/new', {
       doctors,
       availabilities,
       availableSlots,
-      user: req.session.user
+      user: req.session.user,
+      selectedPatient,
     });
   } catch (error) {
     console.error(error);
@@ -114,13 +189,17 @@ router.get('/new', authorize('appointments', 'create'), async (req, res) => {
   }
 });
 
+// POST create appointment
 router.post('/', authorize('appointments', 'create'), async (req, res) => {
   try {
-    const { slotTime, availabilityId, doctor_id } = req.body; 
+    const { slotTime, availabilityId, doctor_id, patientId, date } = req.body;
 
-    const patient_id = req.session.user._id;
+    let patient_id = req.session.user._id;
+    if ((req.session.user.role === 'employee' || req.session.user.role === 'admin') && patientId) {
+      patient_id = patientId;
+    }
 
-    if (!slotTime || !availabilityId || !doctor_id) {
+    if (!slotTime || !availabilityId || !doctor_id || !date) {
       return res.send('Missing required fields');
     }
 
@@ -128,6 +207,7 @@ router.post('/', authorize('appointments', 'create'), async (req, res) => {
       availabilityId,
       time: slotTime,
       employee_id: doctor_id,
+      date: new Date(date),
     });
     if (existingAppointment) {
       return res.send('Selected slot already booked');
@@ -136,25 +216,24 @@ router.post('/', authorize('appointments', 'create'), async (req, res) => {
     const appointmentData = {
       availabilityId,
       patient_id,
-      employee_id: doctor_id, 
+      employee_id: doctor_id,
       time: slotTime,
-      date: new Date(req.body.date),
-      
+      date: new Date(date),
     };
 
     await Appointment.create(appointmentData);
     res.redirect('/appointments');
-
   } catch (error) {
     console.log(error);
     res.redirect('/');
   }
 });
 
-router.get('/:appointmentId/edit', authorize('appointments', 'update'), async (req,res) =>{
+// Edit appointment form
+router.get('/:appointmentId/edit', authorize('appointments', 'update'), async (req, res) => {
   try {
     const appointmentId = req.params.appointmentId;
-    const appointment = await Appointment.findById(appointmentId);
+    const appointment = await Appointment.findById(appointmentId).lean();
 
     if (!appointment) {
       return res.status(404).send('Appointment not found');
@@ -167,14 +246,12 @@ router.get('/:appointmentId/edit', authorize('appointments', 'update'), async (r
   }
 });
 
-
+// PUT update appointment
 router.put('/:appointmentId', authorize('appointments', 'update'), async (req, res) => {
   try {
     const { slotTime } = req.body;
 
-    await Appointment.findByIdAndUpdate(req.params.appointmentId, {
-      slotTime,
-    });
+    await Appointment.findByIdAndUpdate(req.params.appointmentId, { time: slotTime });
 
     res.redirect('/appointments');
   } catch (error) {

@@ -36,6 +36,10 @@
       <label>Full Name:</label>
       <input type="text" name="fullName" />
 
+      <label for="cpr">CPR:</label><br />
+      <input type="text" id="cpr" name="cpr" <% if (role !== 'patient') { %> style="display:none" <% } %> />
+
+
       <label>Phone:</label>
       <input type="text" name="phone" />
 

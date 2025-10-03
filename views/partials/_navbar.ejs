@@ -5,10 +5,10 @@
     <% if (user.role === 'patient') { %>
       <a href="/appointments">View My appointments</a>
     <% } else if (user.role === 'doctor') { %>
-      <a href="/doctor/dashboard">Doctor Dashboard</a>
+      <a href="/admin/doctor">Doctor Dashboard</a>
       <a href="/appointments">Manage Appointments</a>
     <% } else if (user.role === 'employee') { %>
-      <a href="/employee/dashboard">Employee Dashboard</a>
+      <a href="/admin/employee">Employee Dashboard</a>
       <a href="/appointments">Manage Appointments</a>
     <% } else if (user.role === 'admin') { %>
       <a href="/admin/dashboard">Admin Dashboard</a>

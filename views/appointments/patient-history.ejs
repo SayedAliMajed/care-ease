@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Patient History: <%= patient.profile.fullName %></title>
+  <link rel="stylesheet" href="/stylesheets/style.css" />
+</head>
+<body>
+  <%- include('../partials/_navbar') %>
+  <main class="container">
+    <h1>Patient History for <%= patient.profile.fullName %></h1>
+    <p>Email: <%= patient.email %></p>
+    <p>Phone: <%= patient.profile.phone %></p>
+    <p>Address: <%= patient.profile.address %></p>
+    <p>CPR: <%= patient.profile.cpr %></p>
+
+    <h2>Past Visits and Prescriptions</h2>
+    <% if (appointments.length) { %>
+      <table class="styled-table">
+        <thead>
+          <tr><th>Date</th><th>Doctor</th><th>Prescription</th></tr>
+        </thead>
+        <tbody>
+          <% appointments.forEach(app => { %>
+            <tr>
+              <td><%= app.date.toDateString() %></td>
+              <td><%= app.employee_id?.profile.fullName || 'Unknown' %></td>
+              <td><%= app.prescription || 'N/A' %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    <% } else { %>
+      <p>No visits found.</p>
+    <% } %>
+
+    <a href="/appointments/new?patientId=<%= patient._id %>" class="button-outline">Add Appointment</a>
+  </main>
+  <%- include('../partials/_footer') %>
+</body>
+</html>
