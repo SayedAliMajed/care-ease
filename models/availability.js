@@ -34,6 +34,17 @@ const availabilitySchema = new mongoose.Schema({
         required: true,
         index: true,
     },
+    doctorId: {
+        type: Schema.Types.ObjectId,
+         ref: 'User',  
+         required: true,
+         index: true,
+    },
+    isRepeating: {
+        type: Boolean,
+        default: false,
+    },
+
     breakTimes: [BreakTimeSchema]
     });  
 

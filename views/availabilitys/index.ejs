@@ -19,29 +19,39 @@
           <th>Date</th>
           <th>From - To</th>
           <th>Slot Duration (mins)</th>
+          <th>Doctor</th>
           <th>Break From - To</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         <% availabilitys.forEach(function(avail) { %>
-        <tr>
-          <td><%= new Date(avail.date).toDateString() %></td>
-          <td><%= avail.openingTime %> - <%= avail.closingTime %></td>
-          <td><%= avail.duration %></td>
-          <td><%= avail.breakStartTime && avail.breakEndTime ? avail.breakStartTime + ' - ' + avail.breakEndTime : 'None' %></td>
-          <td>
-            <a href="/availabilitys/<%= avail._id %>/edit" class="button-outline">Edit</a>
-            <form action="/availabilitys/<%= avail._id %>?_method=DELETE" method="POST" style="display:inline;">
-              <button type="submit" class="button-outline" onclick="return confirm('Are you sure?')">Delete</button>
-            </form>
-          </td>
-        </tr>
+          <tr>
+            <td><%= new Date(avail.date).toDateString() %></td>
+            <td><%= avail.openingTime %> - <%= avail.closingTime %></td>
+            <td><%= avail.duration %></td>
+            <td><%= avail.doctorId && avail.doctorId.profile ? avail.doctorId.profile.fullName : 'N/A' %></td>
+            <td>
+              <% if (avail.breakTimes && avail.breakTimes.length) { %>
+                <% avail.breakTimes.forEach(function(breakTime) { %>
+                  <div><%= breakTime.startTime %> - <%= breakTime.endTime %></div>
+                <% }) %>
+              <% } else { %>
+                None
+              <% } %>
+            </td>
+            <td>
+              <a href="/availabilitys/<%= avail._id %>/edit" class="button-outline">Edit</a>
+              <form action="/availabilitys/<%= avail._id %>?_method=DELETE" method="POST" style="display:inline;">
+                <button type="submit" class="button-outline" onclick="return confirm('Are you sure?')">Delete</button>
+              </form>
+            </td>
+          </tr>
         <% }) %>
       </tbody>
     </table>
   </main>
-   <%- include('../partials/_footer') %>
+  <%- include('../partials/_footer') %>
 </body>
 
 </html>

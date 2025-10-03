@@ -13,35 +13,82 @@
   <main class="container">
     <h2>Edit Availability</h2>
     <form action="/availabilitys/<%= availability._id %>?_method=PUT" method="POST">
-      <label>Date:
-        <input type="date" name="date" value="<%= new Date(availability.date).toISOString().substring(0,10) %>" required />
-      </label>
 
-      <label>Opening Time:
-        <input type="time" name="openingTime" value="<%= availability.openingTime %>" required />
-      </label>
+      <!-- Date -->
+      <label for="date">Date:</label>
+      <input type="date" id="date" name="date" value="<%= new Date(availability.date).toISOString().substring(0,10) %>" required />
 
-      <label>Closing Time:
-        <input type="time" name="closingTime" value="<%= availability.closingTime %>" required />
-      </label>
+      <!-- Doctor Assignment -->
+      <label for="doctorId">Doctor:</label>
+      <select name="doctorId" id="doctorId" required>
+        <% doctors.forEach(doctor => { %>
+          <option value="<%= doctor._id %>" <%= availability.doctorId && availability.doctorId.toString() === doctor._id.toString() ? 'selected' : '' %>>
+            <%= doctor.profile.fullName %>
+          </option>
+        <% }) %>
+      </select>
 
-      <label>Slot Duration (minutes):
-        <input type="number" name="duration" value="<%= availability.duration %>" min="1" required />
-      </label>
+      <!-- Opening Time -->
+      <label for="openingTime">Opening Time:</label>
+      <input type="time" id="openingTime" name="openingTime" value="<%= availability.openingTime %>" required />
 
-      <label>Break Start Time (optional):
-        <input type="time" name="breakStartTime" value="<%= availability.breakStartTime || '' %>" />
-      </label>
+      <!-- Closing Time -->
+      <label for="closingTime">Closing Time:</label>
+      <input type="time" id="closingTime" name="closingTime" value="<%= availability.closingTime %>" required />
 
-      <label>Break End Time (optional):
-        <input type="time" name="breakEndTime" value="<%= availability.breakEndTime || '' %>" />
-      </label>
+      <!-- Slot Duration -->
+      <label for="duration">Slot Duration (minutes):</label>
+      <input type="number" id="duration" name="duration" min="1" value="<%= availability.duration %>" required />
+
+      <!-- Break Times -->
+      <label>Break Times:</label>
+      <div id="breakTimesContainer">
+        <% if (availability.breakTimes && availability.breakTimes.length) { %>
+          <% availability.breakTimes.forEach(function(breakTime, index) { %>
+            <div class="break-time-row">
+              <label for="breakStartTime_<%= index %>">Start:</label>
+              <input type="time" id="breakStartTime_<%= index %>" name="breakTimes[<%= index %>][startTime]" value="<%= breakTime.startTime %>" />
+              <label for="breakEndTime_<%= index %>">End:</label>
+              <input type="time" id="breakEndTime_<%= index %>" name="breakTimes[<%= index %>][endTime]" value="<%= breakTime.endTime %>" />
+            </div>
+          <% }) %>
+        <% } else { %>
+          <div class="break-time-row">
+            <label for="breakStartTime_0">Start:</label>
+            <input type="time" id="breakStartTime_0" name="breakTimes[0][startTime]" />
+            <label for="breakEndTime_0">End:</label>
+            <input type="time" id="breakEndTime_0" name="breakTimes[0][endTime]" />
+          </div>
+        <% } %>
+      </div>
+      <button type="button" id="addBreakTimeBtn">Add Another Break</button>
+
+      <!-- Repeat Daily -->
+      <label for="isRepeating">Repeat Daily:</label>
+      <input type="checkbox" id="isRepeating" name="isRepeating" <%= availability.isRepeating ? 'checked' : '' %> />
 
       <button type="submit" class="button-primary">Save Changes</button>
     </form>
     <a href="/availabilitys" class="button-outline">Back to List</a>
   </main>
-   <%- include('../partials/_footer') %>
+  <%- include('../partials/_footer') %>
+
+  <script>
+    // Add JavaScript to dynamically add break time fields
+    document.getElementById('addBreakTimeBtn').addEventListener('click', () => {
+      const container = document.getElementById('breakTimesContainer');
+      const currentIndex = container.querySelectorAll('.break-time-row').length;
+      const div = document.createElement('div');
+      div.classList.add('break-time-row');
+      div.innerHTML = `
+        <label for="breakStartTime_${currentIndex}">Start:</label>
+        <input type="time" id="breakStartTime_${currentIndex}" name="breakTimes[${currentIndex}][startTime]" />
+        <label for="breakEndTime_${currentIndex}">End:</label>
+        <input type="time" id="breakEndTime_${currentIndex}" name="breakTimes[${currentIndex}][endTime]" />
+      `;
+      container.appendChild(div);
+    });
+  </script>
 </body>
 
 </html>

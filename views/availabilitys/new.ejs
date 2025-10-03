@@ -29,6 +29,13 @@
         <input type="number" name="duration" min="1" required />
       </label>
 
+      <label for="doctorId">Assign to Doctor</label>
+        <select name="doctorId" id="doctorId" required>
+        <% doctors.forEach(doctor => { %>
+        <option value="<%= doctor._id %>"><%= doctor.profile.fullName %></option>
+        <% }) %>
+      </select>
+      
       <label>Break Start Time (optional):
         <input type="time" name="breakStartTime" />
       </label>
@@ -36,6 +43,10 @@
       <label>Break End Time (optional):
         <input type="time" name="breakEndTime" />
       </label>
+
+      <label for="isRepeating">Repeat Daily:</label>
+      <input type="checkbox" name="isRepeating" id="isRepeating" <%= availability?.isRepeating ? 'checked' : '' %> />
+
 
       <button type="submit" class="button-primary">Add Availability</button>
     </form>

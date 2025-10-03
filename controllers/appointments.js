@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
+
 const authorize = require('../middleware/authorize');
 const User = require('../models/user');
 const Availability = require('../models/availability');
@@ -70,31 +71,64 @@ router.get('/availability/:availabilityId', authorize('appointments', 'read'), a
 });
 
 // List appointments by role
+const mongoose = require('mongoose');
+
 router.get('/', authorize('appointments', 'read'), async (req, res) => {
   try {
     const user = req.session.user;
     if (!user) return res.redirect('/auth/sign-in');
 
-    let appointments;
+    // Extract filters from query with defaults
+    let { status, dateFrom, dateTo, doctorId } = req.query;
+
+    let filter = {};
 
     if (user.role === 'patient') {
-      appointments = await Appointment.find({ patient_id: user._id })
-        .select('-prescription')
-        .sort({ date: 1 })
-        .lean();
-    } else if (['doctor', 'employee', 'admin'].includes(user.role)) {
-      appointments = await Appointment.find()
-        .sort({ date: 1 })
-        .populate('patient_id', 'profile.fullName')
-        .lean();
+      filter.patient_id = user._id;
+      // Patients view all their appointments optionally filtered by dates/status if needed
+    } else {
+      // For staff roles optionally filter by doctor
+      if (doctorId && mongoose.Types.ObjectId.isValid(doctorId)) {
+        filter.employee_id = doctorId;
+      }
     }
 
-    res.render('appointments/index', { user, appointments });
+    if (status) {
+      filter.status = status; // status field must exist in Appointment schema
+    }
+
+    // Default date filter to today if none provided
+    const startDate = dateFrom ? new Date(dateFrom) : new Date();
+    const endDate = dateTo ? new Date(dateTo) : new Date(startDate);
+    endDate.setHours(23, 59, 59, 999);
+    filter.date = { $gte: startDate, $lte: endDate };
+
+    // Query with population for showing patient and doctor details
+    const appointments = await Appointment.find(filter)
+      .populate('patient_id', 'profile.fullName profile.cpr profile.phone')
+      .populate('employee_id', 'profile.fullName')
+      .sort({ date: 1, time: 1 })
+      .lean();
+
+    // Fetch doctors list for filter dropdown (only for employee/admin roles)
+    let doctors = [];
+    if (['employee', 'admin'].includes(user.role)) {
+      doctors = await User.find({ role: 'doctor' }).select('profile.fullName').lean();
+    }
+
+    // Pass to template, ensure filters is always defined for template safety
+    res.render('appointments/index', {
+      user,
+      appointments,
+      doctors,
+      filters: { status, dateFrom, dateTo, doctorId },
+    });
   } catch (error) {
-    console.error(error);
+    console.error('Error fetching appointments:', error);
     res.redirect('/');
   }
 });
+
 
 // Patient Search Routes for employee/admin
 
