@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Edit User</title>
+  <link rel="stylesheet" href="/stylesheets/style.css" />
+</head>
+<body>
+  <h1>Edit User - <%= user.username %></h1>
+  <form action="/admin/edit-user/<%= user._id %>" method="POST">
+    <label for="username">Username:</label><br />
+    <input type="text" id="username" name="username" value="<%= user.username %>" required /><br />
+
+    <label for="email">Email:</label><br />
+    <input type="email" id="email" name="email" value="<%= user.email %>" required /><br />
+
+    <label for="fullName">Full Name:</label><br />
+    <input type="text" id="fullName" name="fullName" value="<%= user.profile?.fullName || '' %>" /><br />
+
+    <label for="phone">Phone:</label><br />
+    <input type="text" id="phone" name="phone" value="<%= user.profile?.phone || '' %>" /><br />
+
+    <label for="address">Address:</label><br />
+    <input type="text" id="address" name="address" value="<%= user.profile?.address || '' %>" /><br />
+
+    <% if (user.role === 'employee') { %>
+      <label for="department">Department:</label><br />
+      <input type="text" id="department" name="department" value="<%= user.profile?.department || '' %>" /><br />
+    <% } %>
+
+    <% if (user.role === 'doctor') { %>
+      <label for="specialty">Specialty:</label><br />
+      <input type="text" id="specialty" name="specialty" value="<%= user.profile?.specialty || '' %>" /><br />
+    <% } %>
+
+    <button type="submit">Save Changes</button>
+  </form>
+  <a href="/admin/users">Back to user list</a>
+
+  <%- include('../partials/_footer') %>
+</body>
+</html>

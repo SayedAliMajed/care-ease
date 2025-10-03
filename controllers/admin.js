@@ -14,13 +14,11 @@ const permissions = {
 };
 
 router.get('/employee', (req, res) => {
-  
   if (!req.session.user) {
     return res.redirect('/auth/sign-in');
   }
   res.render('dashboard/employee', { user: req.session.user });
 });
-
 
 // Role check middleware
 function isAdmin(req, res, next) {
@@ -46,7 +44,7 @@ function authorizeAction(model, action) {
   };
 }
 
-// User management routes
+
 router.get('/create-user', isAdmin, (req, res) => {
   res.render('admin/create-user.ejs');
 });
@@ -89,6 +87,53 @@ router.get('/users', isAdmin, authorizeAction('users', 'read'), async (req, res)
   }
 });
 
+
+router.get('/edit-user/:userId', isAdmin, authorizeAction('users', 'update'), async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).send('User not found');
+    }
+    res.render('admin/edit-user', { user });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Server error');
+  }
+});
+
+
+router.post('/edit-user/:userId', isAdmin, authorizeAction('users', 'update'), async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const { username, email, fullName, phone, address, department, specialty } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).send('User not found');
+    }
+
+    
+    user.username = username;
+    user.email = email;
+    if (!user.profile) user.profile = {};
+    user.profile.fullName = fullName;
+    user.profile.phone = phone;
+    user.profile.address = address;
+    if (user.role === 'employee') {
+      user.profile.department = department;
+    } else if (user.role === 'doctor') {
+      user.profile.specialty = specialty;
+    }
+
+    await user.save();
+    res.redirect('/admin/users');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error updating user');
+  }
+});
+
 router.get('/dashboard', async (req, res) => {
   const role = req.session.user?.role;
 
@@ -114,6 +159,24 @@ router.get('/dashboard', async (req, res) => {
   }
 });
 
+// DELETE user by ID
+router.post('/delete-user/:userId', isAdmin, authorizeAction('users', 'delete'), async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    const deletedUser = await User.findByIdAndDelete(userId);
+    if (!deletedUser) {
+      return res.status(404).send('User not found');
+    }
+
+    res.redirect('/admin/users'); // Redirect to user list after deletion
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error deleting user');
+  }
+});
+
+
 exports.dashboard = async (req, res) => {
   try {
     const userRole = req.session.user?.role;
@@ -137,8 +200,6 @@ exports.dashboard = async (req, res) => {
         appointments: mappedAppointments
       });
     }
-
-
 
     res.redirect('/');
   } catch (error) {

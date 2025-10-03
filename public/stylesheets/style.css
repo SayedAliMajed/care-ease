@@ -1,6 +1,6 @@
-/* ================================
-   CSS VARIABLES (THEME)
-================================ */
+/* ========================================
+   VARIABLES & RESET
+======================================== */
 :root {
   --primary-color: #0073e6;
   --primary-color-dark: #005f9e;
@@ -15,15 +15,14 @@
   --font-family: Arial, sans-serif;
 }
 
-/* ================================
-   RESET & BASE STYLES
-================================ */
+/* Box Sizing - Includes padding and border in element's total size */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
+/* Reset margins, set base font */
 html, body {
   height: 100%;
   margin: 0;
@@ -32,37 +31,23 @@ html, body {
   line-height: 1.5;
   background-color: var(--background-light);
   color: var(--text-color);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  color: var(--primary-color);
-  text-decoration: none;
-}
-
-a:hover,
-a:focus {
-  text-decoration: underline;
-}
-
-button,
-input,
-select,
-textarea {
-  font-family: inherit;
-  font-size: 1rem;
+/* Accessible focus outline */
+:focus-visible {
+  outline: 3px solid var(--primary-color);
   outline-offset: 2px;
 }
 
-/* ================================
-   TYPOGRAPHY & LABELS
-================================ */
+/* ========================================
+   TYPOGRAPHY & BASIC ELEMENTS
+======================================== */
 h1, h2, h3, h4 {
   color: var(--heading-color);
   margin-top: 0;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
   font-weight: 700;
+  line-height: 1.2;
 }
 
 p {
@@ -74,39 +59,41 @@ strong {
   color: #002b40;
 }
 
-/* Apply global label style:
-   display block and left aligned */
+/* Labels for form inputs */
 label {
   display: block;
   width: 100%;
-  margin-bottom: 0.4em;
+  margin-bottom: 0.35em;
   font-weight: 600;
   color: #005f9e;
   text-align: left;
 }
 
-/* Optional colon after labels */
 label::after {
   content: ":";
   margin-left: 0.15em;
 }
 
-/* ================================
-   GLOBAL CONTAINER
-================================ */
-.container {
-  width: 90%;
-  max-width: var(--max-container-width);
-  margin: var(--spacing) auto;
-  padding: var(--spacing);
-  background: #fff;
-  border-radius: var(--border-radius);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+/* Links */
+a {
+  color: var(--primary-color);
+  text-decoration: none;
 }
 
-/* ================================
-   NAVIGATION
-================================ */
+a:hover,
+a:focus {
+  text-decoration: underline;
+}
+
+/* ========================================
+   NAVIGATION & HEADER
+======================================== */
+header, nav {
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
 nav {
   background-color: var(--primary-color);
   color: white;
@@ -133,9 +120,64 @@ nav a:focus {
   text-decoration: underline;
 }
 
-/* ================================
-   FORMS - shared input styles
-================================ */
+/* ========================================
+   MAIN CONTAINERS & LAYOUT
+======================================== */
+.container,
+.hero-section,
+.features-section,
+.about-section,
+.signin-box,
+.signup-box {
+  max-width: var(--max-container-width);
+  margin: 1.5rem auto;
+  width: 100%;
+  padding: var(--spacing);
+  background: #fff;
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-sizing: border-box;
+}
+
+/* Section spacing */
+section,
+.appointments-list,
+.features-section,
+.about-section {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+/* ========================================
+   APPOINTMENTS LIST
+======================================== */
+.appointments-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.appointments-list li {
+  background: #e3f0fc;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.appointments-list li:hover,
+.appointments-list li:focus-within {
+  background: #c3ddfc;
+}
+
+.appointments-list li a {
+  font-weight: 600;
+  color: #005f9e;
+  margin-right: 0.625rem;
+}
+
+/* ========================================
+   FORM ELEMENTS
+======================================== */
 form input[type="text"],
 form input[type="email"],
 form input[type="password"],
@@ -163,9 +205,15 @@ form textarea {
   min-height: 80px;
 }
 
-/* ================================
+/* Native UI element accent */
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--primary-color);
+}
+
+/* ========================================
    BUTTONS
-================================ */
+======================================== */
 .button-primary,
 button.button-primary {
   background-color: var(--primary-color);
@@ -180,6 +228,7 @@ button.button-primary {
   text-align: center;
   text-decoration: none;
   user-select: none;
+  width: 100%;
 }
 
 .button-primary:hover,
@@ -190,40 +239,42 @@ button.button-primary:focus {
   outline: none;
 }
 
-.button-outline,
-button.button-outline {
+/* ========================================
+   OUTLINED BUTTONS
+======================================== */
+.button-outline {
   background-color: transparent;
   border: 2px solid var(--primary-color);
   color: var(--primary-color);
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 700;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  padding: 0.4rem 0.9rem;
+  border-radius: 5px;
   text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
   display: inline-block;
-  text-align: center;
+  font-size: 0.9rem;
   user-select: none;
+  min-width: 60px;
+  text-align: center;
+
+  /* Reset default button/UI shadow and background */
+  background: transparent !important;
+  box-shadow: none !important;
+  border-style: solid !important;
 }
 
+/* Hover and focus states */
 .button-outline:hover,
-button.button-outline:hover,
-.button-outline:focus,
-button.button-outline:focus {
+.button-outline:focus {
   background-color: var(--primary-color);
   color: white;
   outline: none;
 }
 
-.btn-large {
-  padding: 0.875rem 1.875rem;
-  font-size: 1.2rem;
-  border-radius: 30px;
-}
-
-/* ================================
+/* ========================================
    TABLES
-================================ */
+======================================== */
 .styled-table {
   width: 100%;
   border-collapse: collapse;
@@ -233,17 +284,17 @@ button.button-outline:focus {
   box-shadow: 0 0 8px rgba(0,0,0,0.1);
 }
 
+.styled-table th,
+.styled-table td {
+  padding: 0.75rem 1rem;
+  border: 1px solid #ddd;
+}
+
 .styled-table thead tr {
   background-color: var(--primary-color);
   color: #fff;
   text-align: left;
   font-weight: bold;
-}
-
-.styled-table th,
-.styled-table td {
-  padding: 0.75rem 1rem;
-  border: 1px solid #ddd;
 }
 
 .styled-table tbody tr {
@@ -262,42 +313,116 @@ button.button-outline:focus {
   background-color: #dbeaff;
 }
 
-/* ================================
-   APPOINTMENTS LIST
-================================ */
-.appointments-list {
-  list-style: none;
-  padding-left: 0;
+/* Fix table cell alignment for action buttons */
+.styled-table td:last-child {
+  white-space: nowrap;
+  vertical-align: middle;
+  text-align: center;
+  padding: 0.5rem 1rem;
 }
 
-.appointments-list li {
-  background: #e3f0fc;
-  margin-bottom: 0.625rem;
-  padding: 0.75rem;
-  border-radius: 5px;
-  transition: background-color 0.3s ease;
+/* Form inline inside table cell */
+.styled-table td form {
+  display: inline;
+  margin: 0;
+  padding: 0;
 }
 
-.appointments-list li:hover,
-.appointments-list li:focus-within {
-  background: #c3ddfc;
-}
-
-.appointments-list li a {
-  font-weight: 600;
-  color: #005f9e;
-  margin-right: 0.625rem;
-}
-
-.appointments-list li a.button-outline {
-  font-weight: normal;
+/* Style buttons and links inside table cell */
+.styled-table td a.button-outline,
+.styled-table td button.button-outline {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 0.25rem;
+  padding: 0.3rem 0.7rem;
   font-size: 0.9rem;
-  padding: 0.375rem 0.75rem;
+  min-width: 60px;
+  cursor: pointer;
+  border-radius: 4px;
 }
 
-/* ================================
+/* Optional margin between edit link and delete form */
+.styled-table td a.button-outline + form {
+  margin-left: 0.2rem;
+}
+
+/* ========================================
+   SIGN-IN/SIGN-UP PAGES
+======================================== */
+.signin-container,
+.signup-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 90vh;
+  margin-top: 2rem;
+  padding: 1.25rem;
+  background-color: var(--background-muted);
+  box-sizing: border-box;
+}
+
+.signin-box,
+.signup-box {
+  background: #fff;
+  padding: 2rem 2.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.signin-box h2,
+.signup-box h2 {
+  margin-bottom: 1.25rem;
+  color: var(--heading-color);
+}
+
+.signin-box form input,
+.signup-box form input,
+.signup-box form select,
+.signup-box form textarea {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+.signin-box form button,
+.signup-box form button {
+  width: 100%;
+  padding: 0.75rem;
+  font-weight: 700;
+  background: var(--primary-color);
+  border: none;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  user-select: none;
+}
+
+.signin-box form button:hover,
+.signup-box form button:hover,
+.signin-box form button:focus,
+.signup-box form button:focus {
+  background: var(--primary-color-dark);
+  outline: none;
+}
+
+.signin-box p,
+.signup-box p {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+/* ========================================
    HOMEPAGE SECTIONS
-================================ */
+======================================== */
 .hero-section {
   background: url('/images/hero-medical-bg.jpg') center center/cover no-repeat;
   color: white;
@@ -323,33 +448,19 @@ button.button-outline:focus {
   margin-right: auto;
 }
 
-.features-section {
-  margin-bottom: 3.75rem;
+.features-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .features-section h2 {
   text-align: center;
   margin-bottom: 2.5rem;
   color: var(--heading-color);
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2.5rem;
-  text-align: center;
-}
-
-@media (min-width: 600px) {
-  .features-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  .features-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
 }
 
 .feature-card {
@@ -384,6 +495,9 @@ button.button-outline:focus {
   margin-bottom: 1.25rem;
 }
 
+/* ========================================
+   FOOTER
+======================================== */
 .footer {
   background: var(--primary-color);
   color: white;
@@ -392,208 +506,273 @@ button.button-outline:focus {
   margin-top: 3.75rem;
   font-size: 0.9rem;
   border-radius: 0 0 var(--border-radius) var(--border-radius);
-}
-
-/* ================================
-   SIGN-IN PAGE
-================================ */
-.signin-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  padding: 1.25rem;
-  background-color: var(--background-muted);
-  box-sizing: border-box;
-}
-
-.signin-box {
-  background: #fff;
-  padding: 2rem 2.5rem;
-  border-radius: var(--border-radius);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  max-width: 400px;
   width: 100%;
-  text-align: center;
-  box-sizing: border-box;
-}
-
-.signin-box h2 {
-  margin-bottom: 1.25rem;
-  color: var(--heading-color);
-}
-
-.signin-box form input[type="email"],
-.signin-box form input[type="password"],
-.signin-box form input[type="text"] {
-  width: 100%;
-  padding: 0.625rem 0.75rem;
-  margin-bottom: 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: 5px;
-  box-sizing: border-box;
-  transition: border-color 0.3s ease;
-}
-
-.signin-box form button {
-  width: 100%;
-  padding: 0.75rem;
-  font-weight: 700;
-  background: var(--primary-color);
-  border: none;
-  color: white;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-  user-select: none;
-}
-
-.signin-box form button:hover,
-.signin-box form button:focus {
-  background: var(--primary-color-dark);
-  outline: none;
-}
-
-.signin-box p {
-  margin-top: 1rem;
-  font-size: 0.9rem;
-}
-
-/* ================================
-   SIGN-UP PAGE
-================================ */
-.signup-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  padding: 1.25rem;
-  background-color: var(--background-muted);
-  box-sizing: border-box;
-}
-
-.signup-box {
-  background: #fff;
-  padding: 2rem 2.5rem;
-  border-radius: var(--border-radius);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  max-width: 600px;
-  width: 100%;
-  text-align: center;
-  box-sizing: border-box;
-}
-
-.signup-box h2 {
-  margin-bottom: 1.25rem;
-  color: var(--heading-color);
-}
-
-.signup-box form input[type="text"],
-.signup-box form input[type="email"],
-.signup-box form input[type="password"],
-.signup-box form select,
-.signup-box form textarea {
-  width: 100%;
-  padding: 0.625rem 0.75rem;
-  margin-bottom: 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: 5px;
-  box-sizing: border-box;
-  transition: border-color 0.3s ease;
-}
-
-.signup-box form input:focus,
-.signup-box form select:focus,
-.signup-box form textarea:focus {
-  border-color: var(--primary-color-dark);
-  box-shadow: 0 0 5px rgba(92,138,230,0.7);
-  outline: none;
-}
-
-.signup-box form button {
-  width: 100%;
-  padding: 0.75rem;
-  font-weight: 700;
-  background: var(--primary-color);
-  border: none;
-  color: white;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-  user-select: none;
-}
-
-.signup-box form button:hover,
-.signup-box form button:focus {
-  background: var(--primary-color-dark);
-  outline: none;
-}
-
-.signup-box p {
-  margin-top: 1rem;
-  font-size: 0.9rem;
-}
-
-.container {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 1rem;
-}
-
-input[type="text"],
-select,
-textarea {
-  width: 100%;
-  padding: 0.5rem;
-  box-sizing: border-box;
-}
-
-/* ================================
-   HEADER SPACING
-================================ */
-header, nav {
-  margin-bottom: 1.5rem; /* Adds space below header/navbar */
-  padding-bottom: 0.5rem; /* Optional: small padding for breathing */
-  border-bottom: 1px solid #e0e0e0; /* Optional: subtle divider line */
-}
-
-/* ================================
-   CONTAINER AND FORM SPACING
-================================ */
-.container {
-  margin-top: 1.5rem; /* Space above container content */
-  margin-bottom: 1.5rem; /* Space below container if needed */
-  padding: var(--spacing);
   max-width: var(--max-container-width);
-  width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ========================================
+   RESPONSIVE MEDIA QUERIES
+======================================== */
+
+/* Ultra large desktops and 4K */
+@media (min-width: 1600px) {
+  .container,
+  .hero-section,
+  .features-section,
+  .about-section,
+  .signin-box,
+  .signup-box,
+  .footer {
+    max-width: 1400px;
+  }
+}
+
+/* Tablets / small laptops */
+@media (max-width: 1100px) {
+  .container,
+  .hero-section,
+  .features-section,
+  .about-section,
+  .signin-box,
+  .signup-box,
+  .footer {
+    max-width: 96vw;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Mobile and small tablets */
+@media (max-width: 700px) {
+  .container,
+  .hero-section,
+  .features-section,
+  .about-section,
+  .signin-box,
+  .signup-box,
+  .footer {
+    max-width: 100vw;
+    padding: 1rem 0.5rem;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  h1, h2 {
+    font-size: 1.3rem;
+  }
+  .appointments-list li,
+  .feature-card {
+    padding: 0.7rem 0.4rem;
+  }
+  nav {
+    flex-direction: column;
+    padding: 0.8rem 0.4rem;
+  }
+  .footer {
+    font-size: 0.8rem;
+    margin-top: 2rem;
+    border-radius: 0;
+  }
+}
+
+/* Extra small mobiles */
+@media (max-width: 480px) {
+  .hero-section,
+  .about-section,
+  .feature-card {
+    padding: 1rem 0.25rem;
+  }
+  .signin-box,
+  .signup-box {
+    min-width: 0;
+  }
+  nav {
+    font-size: 0.95rem;
+  }
+}
+
+/* Center forms on the page with max-width and padding */
+form {
+  max-width: 500px;
+  margin: 2rem auto;
+  padding: 1.5rem 2rem;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+  box-sizing: border-box;
+}
+
+/* Clear spacing and color for labels */
+form label {
+  display: block;
+  margin-top: 1.2rem;
+  font-weight: 600;
+  color: #005f9e;
+}
+
+/* Styled full-width inputs with padding and border */
+form input[type="text"],
+form input[type="email"],
+form input[type="password"] {
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  margin-top: 0.3rem;
+  border: 1px solid #a8c6f7;
+  border-radius: 5px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+/* Input focus state */
+form input[type="text"]:focus,
+form input[type="email"]:focus,
+form input[type="password"]:focus {
+  border-color: #0073e6;
+  outline: none;
+  box-shadow: 0 0 6px rgba(0,115,230,0.6);
+}
+
+/* Submit button hover and focus */
+form button[type="submit"]:hover,
+form button[type="submit"]:focus {
+  background-color: #005f9e;
+  outline: none;
+}
+
+/* ========================================
+   ADMIN DASHBOARD SPECIFIC STYLES
+======================================== */
+.dashboard-nav {
+  margin-bottom: 2rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.dashboard-nav a.button-primary,
+.dashboard-nav a.button-outline {
+  min-width: 140px;
+  text-align: center;
+  padding: 0.75rem 1rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  border-radius: var(--border-radius);
+  user-select: none;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dashboard-nav a.button-primary {
+  flex-grow: 1;
+}
+
+.dashboard-nav a.button-primary:hover,
+.dashboard-nav a.button-primary:focus {
+  background-color: var(--primary-color-dark);
+}
+
+.dashboard-nav a.button-outline:hover,
+.dashboard-nav a.button-outline:focus {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+section {
   background: #fff;
   border-radius: var(--border-radius);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  box-sizing: border-box;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+  padding: 2rem;
 }
 
-/* Separate spacing for sign-in, sign-up containers */
-.signin-container,
-.signup-container {
-  margin-top: 2rem; /* Add some space below the header/navbar */
-  padding: 1.25rem;
-  background-color: var(--background-muted);
-  box-sizing: border-box;
+/* Responsive tweaks */
+@media (max-width: 700px) {
+  .dashboard-nav {
+    flex-direction: column;
+  }
+
+  .dashboard-nav a.button-primary,
+  .dashboard-nav a.button-outline {
+    min-width: 100%;
+    font-size: 1rem;
+  }
 }
 
-/* Optionally adjust titles and headings spacing inside forms */
-.signin-box h2,
-.signup-box h2,
-.container h1, .container h2 {
-  margin-top: 0;
-  margin-bottom: 1.25rem;
+/* Center dashboard content and apply spacing */
+.dashboard-center {
+  text-align: center;
+  padding-top: 2rem;
 }
 
-section, .container, .appointments-list, .features-section, .about-section {
-  margin-top: 2rem;
-  margin-bottom: 2rem;
+/* Flex container for action cards */
+.dashboard-actions {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-bottom: 3rem;
 }
 
-h1, h2, h3, h4 {
-  margin-bottom: 1rem;
+/* Each action "card" styled as a rounded button-like block */
+.dashboard-card {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 1.5rem 2.5rem;
+  border-radius: var(--border-radius);
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 4px 15px rgba(0, 115, 230, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  min-width: 200px;
+  justify-content: center;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  user-select: none;
+  cursor: pointer;
+}
+
+/* Outline variation (for sign out) */
+.dashboard-card.outline {
+  background-color: transparent;
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+  box-shadow: none;
+}
+
+/* Hover and focus states */
+.dashboard-card:hover,
+.dashboard-card:focus {
+  background-color: var(--primary-color-dark);
+  box-shadow: 0 6px 20px rgba(0, 95, 158, 0.4);
+  color: white;
+  outline: none;
+}
+
+.dashboard-card.outline:hover,
+.dashboard-card.outline:focus {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  box-shadow: 0 6px 20px rgba(0, 115, 230, 0.3);
+}
+
+/* Icon style inside cards */
+.dashboard-card .icon {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+/* Responsive tweaks for smaller screens */
+@media (max-width: 600px) {
+  .dashboard-actions {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .dashboard-card {
+    min-width: 100%;
+    padding: 1.2rem 2rem;
+  }
 }
