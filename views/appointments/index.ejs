@@ -21,8 +21,7 @@
         <label for="status">Status:</label>
         <select id="status" name="status">
           <option value="" <%= !filters.status ? 'selected' : '' %>>All</option>
-          <option value="pending" <%= filters.status === 'pending' ? 'selected' : '' %>>Pending</option>
-          <option value="confirmed" <%= filters.status === 'confirmed' ? 'selected' : '' %>>Confirmed</option>
+          <option value="scheduled" <%= filters.status === 'scheduled' ? 'selected' : '' %>>Scheduled</option>
           <option value="cancelled" <%= filters.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
           <option value="completed" <%= filters.status === 'completed' ? 'selected' : '' %>>Completed</option>
         </select>

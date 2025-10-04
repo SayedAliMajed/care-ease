@@ -193,9 +193,13 @@ router.get('/patient-history/:patientId', employeeOrAdmin, async (req, res) => {
   }
 });
 
-// Appointment creation form for employee/admin booking for a patient
+
 router.get('/new', authorize('appointments', 'create'), async (req, res) => {
   try {
+    if (!req.session.user) {
+      return res.redirect('/auth/sign-in');
+    }
+
     const doctors = await User.find({ role: 'doctor' }).select('profile.fullName').lean();
     const availabilities = await Availability.find({}).sort({ date: 1, openingTime: 1 }).lean();
 
@@ -208,6 +212,14 @@ router.get('/new', authorize('appointments', 'create'), async (req, res) => {
     let selectedPatient = null;
     if (patientId) {
       selectedPatient = await User.findOne({ _id: patientId, role: 'patient' }).lean();
+      if (!selectedPatient) {
+        return res.status(404).send('Patient not found or invalid');
+      }
+    }
+
+    let patients = [];
+    if (['admin', 'doctor'].includes(req.session.user.role)) {
+      patients = await User.find({ role: 'patient' }).select('profile.fullName cpr').lean();
     }
 
     res.render('appointments/new', {
@@ -216,6 +228,7 @@ router.get('/new', authorize('appointments', 'create'), async (req, res) => {
       availableSlots,
       user: req.session.user,
       selectedPatient,
+      patients,
     });
   } catch (error) {
     console.error(error);
@@ -223,18 +236,20 @@ router.get('/new', authorize('appointments', 'create'), async (req, res) => {
   }
 });
 
+
 // POST create appointment
 router.post('/', authorize('appointments', 'create'), async (req, res) => {
   try {
     const { slotTime, availabilityId, doctor_id, patientId, date } = req.body;
 
+    
+    if (!slotTime || !availabilityId || !doctor_id || !date) {
+      return res.status(400).send('Missing required fields');
+    }
+
     let patient_id = req.session.user._id;
     if ((req.session.user.role === 'employee' || req.session.user.role === 'admin') && patientId) {
       patient_id = patientId;
-    }
-
-    if (!slotTime || !availabilityId || !doctor_id || !date) {
-      return res.send('Missing required fields');
     }
 
     const existingAppointment = await Appointment.findOne({
@@ -244,7 +259,7 @@ router.post('/', authorize('appointments', 'create'), async (req, res) => {
       date: new Date(date),
     });
     if (existingAppointment) {
-      return res.send('Selected slot already booked');
+      return res.status(400).send('Selected slot already booked');
     }
 
     const appointmentData = {
@@ -262,6 +277,7 @@ router.post('/', authorize('appointments', 'create'), async (req, res) => {
     res.redirect('/');
   }
 });
+
 
 // Edit appointment form
 router.get('/:appointmentId/edit', authorize('appointments', 'update'), async (req, res) => {
@@ -284,6 +300,9 @@ router.get('/:appointmentId/edit', authorize('appointments', 'update'), async (r
 router.put('/:appointmentId', authorize('appointments', 'update'), async (req, res) => {
   try {
     const { slotTime } = req.body;
+    if (!slotTime) {
+    return res.status(400).send('Slot time is required');
+  }
 
     await Appointment.findByIdAndUpdate(req.params.appointmentId, { time: slotTime });
 

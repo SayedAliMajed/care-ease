@@ -18,7 +18,7 @@ router.post('/sign-up', async (req, res) => {
     const userInDatabase = await User.findOne({ username: req.body.username });
 
     if (userInDatabase) {
-      return res.send('Username already in use');
+      return res.render('auth/sign-up.ejs', { error: 'Username already in use', formData: req.body });
     }
 
     if (req.body.password !== req.body.confirmPassword) {

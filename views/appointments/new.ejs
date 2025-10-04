@@ -13,24 +13,59 @@
   <main class="container">
     <h1>Book a New Appointment</h1>
     <form action="/appointments" method="POST">
+
+      <% if (user.role === 'patient') { %>
+        <!-- Patient books for self: hidden patientId -->
+        <input type="hidden" name="patientId" value="<%= user._id %>" />
+      
+      <% } else if (user.role === 'employee') { %>
+        <!-- Employee picks patient from dropdown -->
+        <% if (patients && patients.length > 0) { %>
+          <label for="patientId">Select Patient:</label>
+          <select name="patientId" id="patientId" required>
+            <% patients.forEach(patient => { %>
+              <option value="<%= patient._id %>"><%= patient.profile.fullName %> - CPR: <%= patient.cpr %></option>
+            <% }) %>
+          </select>
+        <% } else { %>
+          <p>No patients available to select.</p>
+        <% } %>
+
+      <% } else { %>
+        <!-- Admin or doctor -->
+        <% if (patients && patients.length > 0) { %>
+          <label for="patientId">Select Patient:</label>
+          <select name="patientId" id="patientId" required>
+            <% patients.forEach(patient => { %>
+              <option value="<%= patient._id %>"><%= patient.profile.fullName %> - CPR: <%= patient.cpr %></option>
+            <% }) %>
+          </select>
+        <% } else if (selectedPatient) { %>
+          <input type="hidden" name="patientId" value="<%= selectedPatient._id %>" />
+          <p>Booking for patient: <%= selectedPatient.profile.fullName %> - CPR: <%= selectedPatient.cpr %></p>
+        <% } else { %>
+          <p>No patient selected.</p>
+        <% } %>
+      <% } %>
+
       <label for="doctor_id">Select Doctor:</label>
       <select name="doctor_id" id="doctor_id" required>
         <% doctors.forEach(doctor => { %>
-        <option value="<%= doctor._id %>"><%= doctor.profile.fullName %></option>
+          <option value="<%= doctor._id %>"><%= doctor.profile.fullName %></option>
         <% }) %>
       </select>
 
       <label for="availabilityId">Select Date & Slot:</label>
       <select name="availabilityId" id="availabilityId" required>
         <% availabilities.forEach(slot => { %>
-        <option value="<%= slot._id %>"><%= slot.date.toDateString() %> - <%= slot.openingTime %> to <%= slot.closingTime %></option>
+          <option value="<%= slot._id %>"><%= slot.date.toDateString() %> - <%= slot.openingTime %> to <%= slot.closingTime %></option>
         <% }) %>
       </select>
 
       <label for="slotTime">Select Time Slot:</label>
       <select name="slotTime" id="slotTime" required>
         <% availableSlots.forEach(time => { %>
-        <option value="<%= time %>"><%= time %></option>
+          <option value="<%= time %>"><%= time %></option>
         <% }) %>
       </select>
 

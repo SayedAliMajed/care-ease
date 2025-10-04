@@ -22,8 +22,8 @@ const userSchema = new mongoose.Schema({
     enum: ['patient', 'doctor', 'employee', 'admin'],
   },
   profile: {
-    fullName: String,
-    cpr: String,
+    fullName: { type: String, required: true },
+    cpr: { type: String, required: true },
     phone: String,
     address: String,
     department: String, // only for employee

@@ -7,6 +7,10 @@
 </head>
 <body>
   <%- include('../partials/_navbar') %>
+  <a href="/appointments/new?patientId=<%= patient._id %>" class="button-primary">
+  Book New Appointment
+</a>
+
   <main class="container">
     <h1>Patient History for <%= patient.profile.fullName %></h1>
     <p>Email: <%= patient.email %></p>
