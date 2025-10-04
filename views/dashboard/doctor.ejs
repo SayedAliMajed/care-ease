@@ -1,59 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="/stylesheets/style.css" />
   <title>Doctor Dashboard</title>
 </head>
-
 <body>
   <%- include('../partials/_navbar.ejs') %>
   <main class="container">
-    <header>
-      <h1>Welcome, Dr. <%= user?.username || 'Doctor' %></h1>
-    </header>
-    <section>
-      <h2>Upcoming Appointments</h2>
+    <h1>Doctor Dashboard</h1>
+    <p>Welcome, Dr. <%= user.profile.fullName %></p>
 
-      <% if (appointments && appointments.length > 0) { %>
-        <table class="styled-table">
-          <thead>
+    <h2>Your Appointments</h2>
+
+    <% if (appointments.length === 0) { %>
+      <p>No appointments scheduled.</p>
+    <% } else { %>
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>Date & Time</th>
+            <th>Patient Name</th>
+            <th>CPR</th>
+            <th>Phone</th>
+            <th>Status</th>
+            <th>Prescription</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% appointments.forEach(function(appointment) { %>
             <tr>
-              <th>Date</th>
-              <th>Time Slot</th>
-              <th>Patient</th>
-              <th>Reason</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% appointments.forEach(appointment => { %>
-              <tr>
-                <td><%= new Date(appointment.date).toDateString() %></td>
-                <td><%= appointment.time %></td>
-                <td><%= appointment.patientName %></td>
-                <td><%= appointment.reason || 'N/A' %></td>
-                <td>
-                  <% if (appointment.status === 'scheduled') { %>Scheduled<% } 
-                     else if (appointment.status === 'completed') { %>Completed<% } 
-                     else if (appointment.status === 'cancelled') { %>Cancelled<% } 
-                     else { %>Unknown<% } %>
-                </td>
-              </tr>
-            <% }) %>
-          </tbody>
-        </table>
-      <% } else { %>
-        <p>No upcoming appointments.</p>
-      <% } %>
-    </section>
-    <footer>
-      <p>CareEase © 2025</p>
-    </footer>
-  </main>
-   <%- include('../partials/_footer') %>
-</body>
+              <td>
+                <strong><%= new Date(appointment.date).toLocaleDateString() %></strong><br>
+                <small><%= appointment.time %></small>
+              </td>
+              <td>
+                <strong><%= appointment.patientName %></strong>
+              </td>
+              <td>
+                <code><%= appointment.patientCPR %></code>
+              </td>
+              <td>
+                <%= appointment.patientPhone %>
+              </td>
+              <td>
+                <span>
+                  <%= appointment.status.toUpperCase() %>
+                </span>
+              </td>
+              <td>
+                <% if (appointment.prescription) { %>
+                  <div>
+                    <strong>Prescription:</strong>
+                    <div>
+                      <%= appointment.prescription %>
+                    </div>
+                  </div>
+                <% } else { %>
+                  <em>No prescription</em>
+                <% } %>
+              </td>
+              <td>
+                <div>
+                  <form action="/appointments/<%= appointment._id %>/prescription" method="POST">
+                    <input type="hidden" name="_method" value="PUT">
+                    <textarea 
+                      name="prescription" 
+                      placeholder="Write prescription here..."
+                      rows="3"
+                    ><%= appointment.prescription || '' %></textarea>
+                    <button type="submit" class="button-outline">
+                      Save Prescription
+                    </button>
+                  </form>
 
+                  <% if (appointment.status === 'scheduled') { %>
+                    <form action="/appointments/<%= appointment._id %>/complete" method="POST">
+                      <input type="hidden" name="_method" value="PUT">
+                      <button type="submit" class="button-primary">
+                        Mark Complete
+                      </button>
+                    </form>
+                  <% } %>
+                </div>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    <% } %>
+  </main>
+</body>
 </html>

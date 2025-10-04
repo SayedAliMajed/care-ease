@@ -5,9 +5,8 @@
     <% if (user.role === 'patient') { %>
       <a href="/appointments">View My Appointments</a>
     <% } else if (user.role === 'doctor') { %>
-      <a href="/admin/doctor">Doctor Dashboard</a>
-      <a href="/appointments">Manage Appointments</a>
       <a href="/availabilitys">Availability Management</a>
+      <a href="/admin/doctor">Doctor Dashboard</a>
     <% } else if (user.role === 'employee') { %>
       <a href="/admin/employee">Employee Dashboard</a>
       <a href="/appointments">Manage Appointments</a>

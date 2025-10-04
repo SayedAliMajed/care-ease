@@ -21,24 +21,13 @@ const adminController = require('./controllers/admin');
 const app = express();
 const port = process.env.PORT || '3000';
 
-// MIDDLEWARE - Correct order is crucial!
-
-// Morgan for logging HTTP requests (should be first)
+// Middleware
 app.use(morgan('dev'));
-
-// Static files middleware
 app.use(express.static(path.join(__dirname, 'public')));
-
-// Body parsing middleware - MUST come before routes
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
-// Method override for PUT/DELETE
 app.use(methodOverride('_method'));
-
-// View engine setup
 app.set('view engine', 'ejs');
-
 
 app.use(
   session({
@@ -50,13 +39,12 @@ app.use(
       ttl: 14 * 24 * 60 * 60 
     }),
     cookie: {
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
+      maxAge: 1000 * 60 * 60 * 24,
       secure: false, 
       httpOnly: true,
     },
   })
 );
-
 
 app.use(passUserToView);
 
@@ -71,64 +59,20 @@ mongoose.connection.on('error', (err) => {
   console.error('MongoDB connection error:', err);
 });
 
-// ROUTES
-
-// Global Error Handler - should be last
-app.use((err, req, res, next) => {
-  console.error('Global error handler:', err.stack);
-  
-  // Simple error response without requiring error.ejs
-  res.status(500).send(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Server Error</title>
-      <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-        .error-container { max-width: 500px; margin: 0 auto; }
-      </style>
-    </head>
-    <body>
-      <div class="error-container">
-        <h1>500 - Server Error</h1>
-        <p>Something went wrong on our end. Please try again later.</p>
-        <a href="/">Return to Homepage</a>
-        ${process.env.NODE_ENV === 'development' ? `<pre>${err.message}</pre>` : ''}
-      </div>
-    </body>
-    </html>
-  `);
-});
-
-
+// Routes
 app.get('/', (req, res) => {
   res.render('index.ejs');
 });
 
 app.use('/auth', authController);
 
-// Protected Routes (require authentication)
+// Protected Routes
 app.use(isSignedIn); 
-
 app.use('/admin', adminController);
 app.use('/appointments', appointmentsController);
 app.use('/availabilitys', availabilitysController);
 
 
-app.use((req, res) => {
-  res.status(404).render('404', { user: req.session.user });
-});
-
-
-app.use((err, req, res, next) => {
-  console.error('Global error handler:', err.stack);
-  res.status(500).render('error', { 
-    message: 'Something went wrong!',
-    user: req.session.user 
-  });
-});
-
-// Start server
 app.listen(port, () => {
-  console.log(`The express app is ready on port ${port}!`);
+  console.log(`Server listening on port ${port}`);
 });

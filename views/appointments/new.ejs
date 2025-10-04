@@ -1,68 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="/stylesheets/style.css" />
-  <title>New Availability</title>
+  <title>Book New Appointment</title>
 </head>
+
 <body>
   <%- include('../partials/_navbar.ejs') %>
   <main class="container">
-    <h2>Add New Availability</h2>
-    
-    <% if (typeof error !== 'undefined' && error) { %>
-      <div style="color: red; margin-bottom: 16px; padding: 10px; border: 1px solid red; border-radius: 4px;">
-        <%= error %>
-      </div>
-    <% } %>
-    
-    <form action="/availabilitys" method="POST">
-      <label>Date:
-        <input type="date" name="date" value="<%= typeof date !== 'undefined' ? date : '' %>" required />
-      </label>
+    <h1>Book a New Appointment</h1>
+    <form action="/appointments" method="POST">
 
-      <label>Opening Time:
-        <input type="time" name="openingTime" value="<%= typeof openingTime !== 'undefined' ? openingTime : '' %>" required />
-      </label>
+      <% if (user.role === 'patient') { %>
+        <input type="hidden" name="patientId" value="<%= user._id %>" />
+      <% } else if (user.role === 'employee') { %>
+        <% if (patients && patients.length > 0) { %>
+          <label for="patientId">Select Patient:</label>
+          <select name="patientId" id="patientId" required>
+            <% patients.forEach(patient => { %>
+              <option value="<%= patient._id %>"><%= patient.profile.fullName %> - CPR: <%= patient.profile.cpr %></option>
+            <% }) %>
+          </select>
+        <% } else { %>
+          <p>No patients available to select.</p>
+        <% } %>
+      <% } else { %>
+        <% if (patients && patients.length > 0) { %>
+          <label for="patientId">Select Patient:</label>
+          <select name="patientId" id="patientId" required>
+            <% patients.forEach(patient => { %>
+              <option value="<%= patient._id %>"><%= patient.profile.fullName %> - CPR: <%= patient.profile.cpr %></option>
+            <% }) %>
+          </select>
+        <% } else if (selectedPatient) { %>
+          <input type="hidden" name="patientId" value="<%= selectedPatient._id %>" />
+          <p>Booking for patient: <%= selectedPatient.profile.fullName %> - CPR: <%= selectedPatient.profile.cpr %></p>
+        <% } else { %>
+          <p>No patient selected.</p>
+        <% } %>
+      <% } %>
 
-      <label>Closing Time:
-        <input type="time" name="closingTime" value="<%= typeof closingTime !== 'undefined' ? closingTime : '' %>" required />
-      </label>
-
-      <label>Slot Duration (minutes):
-        <input type="number" name="duration" min="1" value="<%= typeof duration !== 'undefined' ? duration : '' %>" required />
-      </label>
-
-      <label for="doctorId">Assign to Doctor</label>
-      <select name="doctorId" id="doctorId" required>
+      <label for="doctor_id">Select Doctor:</label>
+      <select name="doctor_id" id="doctor_id" required>
         <% doctors.forEach(doctor => { %>
-          <option value="<%= doctor._id %>" 
-            <%= (typeof doctorId !== 'undefined' && doctorId === doctor._id.toString()) ? 'selected' : '' %>>
-            <%= doctor.profile.fullName %>
-          </option>
+          <option value="<%= doctor._id %>"><%= doctor.profile.fullName %></option>
         <% }) %>
       </select>
-      
-      <div class="break-time-section">
-        <h3>Break Time (Optional)</h3>
-        <label>Break Start Time:
-          <input type="time" name="breakStartTime" value="<%= typeof breakStartTime !== 'undefined' ? breakStartTime : '' %>" />
-        </label>
 
-        <label>Break End Time:
-          <input type="time" name="breakEndTime" value="<%= typeof breakEndTime !== 'undefined' ? breakEndTime : '' %>" />
-        </label>
-      </div>
+      <label for="availabilityId">Select Availability Slot:</label>
+      <select name="availabilityId" id="availabilityId" required>
+        <% availabilities.forEach(slot => { %>
+          <option value="<%= slot._id %>"><%= slot.date.toDateString() %> - <%= slot.openingTime %> to <%= slot.closingTime %></option>
+        <% }) %>
+      </select>
 
-      <label for="isRepeating">Repeat Daily:</label>
-      <input type="checkbox" name="isRepeating" id="isRepeating" 
-        <%= (typeof isRepeating !== 'undefined' && isRepeating) ? 'checked' : '' %> />
+      <label for="slotTime">Select Time Slot:</label>
+      <select name="slotTime" id="slotTime" required>
+        <% availableSlots.forEach(time => { %>
+          <option value="<%= time %>"><%= time %></option>
+        <% }) %>
+      </select>
 
-      <button type="submit" class="button-primary">Add Availability</button>
+      <button type="submit" class="button-primary">Book Appointment</button>
     </form>
-    <a href="/availabilitys" class="button-outline">Back to List</a>
   </main>
-   <%- include('../partials/_footer') %>
 </body>
+
 </html>

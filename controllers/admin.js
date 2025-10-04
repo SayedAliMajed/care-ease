@@ -55,7 +55,6 @@ router.post('/create-user', isAdmin, authorize('users', 'create'), async (req, r
     
     res.redirect('/admin/users');
   } catch (error) {
-    console.error('Error creating user:', error);
     res.send('Error creating user: ' + error.message);
   }
 });
@@ -66,7 +65,6 @@ router.get('/users', isAdmin, authorize('users', 'read'), async (req, res) => {
     const users = await User.find();
     res.render('admin/user-list.ejs', { users });
   } catch (error) {
-    console.error(error);
     res.redirect('/');
   }
 });
@@ -80,7 +78,6 @@ router.get('/edit-user/:userId', isAdmin, authorize('users', 'update'), async (r
     }
     res.render('admin/edit-user', { user });
   } catch (error) {
-    console.error(error);
     res.status(500).send('Server error');
   }
 });
@@ -110,7 +107,6 @@ router.post('/edit-user/:userId', isAdmin, authorize('users', 'update'), async (
     await user.save();
     res.redirect('/admin/users');
   } catch (error) {
-    console.error(error);
     res.status(500).send('Error updating user');
   }
 });
@@ -126,7 +122,6 @@ router.post('/delete-user/:userId', isAdmin, authorize('users', 'delete'), async
 
     res.redirect('/admin/users');
   } catch (error) {
-    console.error(error);
     res.status(500).send('Error deleting user');
   }
 });
@@ -137,8 +132,33 @@ router.get('/dashboard', async (req, res) => {
 
   try {
     if (role === 'doctor') {
-      const appointments = await Appointment.find({ doctor_Id: req.session.user._id });
-      return res.render('dashboard/doctor', { user: req.session.user, appointments });
+      const doctor_Id = req.session.user._id;
+
+      const appointments = await Appointment.find({
+        doctor_Id: doctor_Id,
+        status: { $in: ['scheduled', 'completed'] }
+      })
+      .populate('patient_id')
+      .populate('doctor_Id')
+      .lean();
+
+      const mappedAppointments = appointments.map(app => {
+        return {
+          _id: app._id,
+          date: app.date,
+          time: app.time,
+          status: app.status,
+          prescription: app.prescription,
+          patientName: app.patient_id?.profile?.fullName || 'No Name',
+          patientCPR: app.patient_id?.profile?.cpr || 'No CPR',
+          patientPhone: app.patient_id?.profile?.phone || 'No Phone'
+        };
+      });
+
+      return res.render('dashboard/doctor', {
+        user: req.session.user,
+        appointments: mappedAppointments
+      });
     }
     if (role === 'admin') {
       return res.render('dashboard/admin', { user: req.session.user });
@@ -152,8 +172,46 @@ router.get('/dashboard', async (req, res) => {
     }
     return res.status(403).send('Access denied');
   } catch (error) {
-    console.error(error);
     res.status(500).send('Internal server error');
+  }
+});
+
+// Doctor Dashboard Route
+router.get('/doctor', async (req, res) => {
+  try {
+    if (req.session.user?.role !== 'doctor') {
+      return res.status(403).send('Access denied - Doctors only');
+    }
+    
+    const doctor_Id = req.session.user._id;
+
+    const appointments = await Appointment.find({
+      doctor_Id: doctor_Id,
+      status: { $in: ['scheduled', 'completed'] }
+    })
+    .populate('patient_id')
+    .populate('doctor_Id')
+    .lean();
+
+    const mappedAppointments = appointments.map(app => {
+      return {
+        _id: app._id,
+        date: app.date,
+        time: app.time,
+        status: app.status,
+        prescription: app.prescription,
+        patientName: app.patient_id?.profile?.fullName || 'No Name',
+        patientCPR: app.patient_id?.profile?.cpr || 'No CPR',
+        patientPhone: app.patient_id?.profile?.phone || 'No Phone'
+      };
+    });
+
+    return res.render('dashboard/doctor', {
+      user: req.session.user,
+      appointments: mappedAppointments
+    });
+  } catch (error) {
+    res.status(500).send('Server error');
   }
 });
 
@@ -163,37 +221,5 @@ router.get('/employee', (req, res) => {
   }
   res.render('dashboard/employee', { user: req.session.user });
 });
-
-// Dashboard export for doctor view
-exports.dashboard = async (req, res) => {
-  try {
-    const userRole = req.session.user?.role;
-    if (userRole === 'doctor') {
-      const doctor_Id = req.session.user._id;
-
-      const appointments = await Appointment.find({
-        doctor_Id: doctor_Id,
-        status: 'scheduled' 
-      })
-      .populate('patient_id', 'username profile.cpr') 
-      .sort({ date: 1 });
-
-      const mappedAppointments = appointments.map(app => ({
-        ...app.toObject(),
-        patientName: app.patient_id?.username || 'Unknown'
-      }));
-
-      return res.render('dashboard/doctor', {
-        user: req.session.user,
-        appointments: mappedAppointments
-      });
-    }
-
-    res.redirect('/');
-  } catch (error) {
-    console.error('Error rendering dashboard:', error);
-    res.status(500).send('Server error');
-  }
-};
 
 module.exports = router;
