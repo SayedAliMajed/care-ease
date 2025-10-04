@@ -4,22 +4,57 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="/stylesheets/style.css" />
-  <title>Sign In</title>
+  <title>Sign In - CareEase</title>
 </head>
 <body>
   <div class="signin-container">
     <div class="signin-box">
       <h2>Sign In</h2>
+      
+      <!-- Error Messages -->
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-error">
+          <%= typeof error === 'string' ? error : 'Invalid credentials' %>
+        </div>
+      <% } %>
+
+      <!-- Success Messages (like after sign-up) -->
+      <% if (typeof success !== 'undefined' && success) { %>
+        <div class="alert alert-success">
+          <%= success %>
+        </div>
+      <% } %>
+
       <form action="/auth/sign-in" method="POST">
         <label for="username">Username</label>
-        <input type="text" name="username" id="username" required />
+        <input 
+          type="text" 
+          name="username" 
+          id="username" 
+          value="<%= typeof username !== 'undefined' ? username : '' %>" 
+          required 
+          autofocus
+        />
 
         <label for="password">Password</label>
-        <input type="password" name="password" id="password" required />
+        <input 
+          type="password" 
+          name="password" 
+          id="password" 
+          required 
+        />
 
         <button type="submit" class="button-primary">Sign In</button>
       </form>
-      <p>Don’t have an account? <a href="/auth/sign-up">Sign Up</a></p>
+      
+      <p class="signup-link">
+        Don't have an account? <a href="/auth/sign-up">Sign Up</a>
+      </p>
+
+      <!-- Optional: Forgot Password Link -->
+      <!-- <p class="forgot-password">
+        <a href="/auth/forgot-password">Forgot your password?</a>
+      </p> -->
     </div>
   </div>
 

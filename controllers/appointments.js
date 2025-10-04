@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-
+const mongoose = require('mongoose');
 
 const authorize = require('../middleware/authorize');
 const User = require('../models/user');
@@ -13,9 +13,6 @@ function employeeOrAdmin(req, res, next) {
   if (role === 'employee' || role === 'admin') return next();
   return res.status(403).send('Forbidden');
 }
-
-// Use existing role-based authorization for read permissions globally
-router.use(authorize('appointments', 'read'));
 
 function toMinutes(timeStr) {
   const [h, m] = timeStr.split(':').map(Number);
@@ -71,73 +68,75 @@ router.get('/availability/:availabilityId', authorize('appointments', 'read'), a
 });
 
 // List appointments by role
-const mongoose = require('mongoose');
-
 router.get('/', authorize('appointments', 'read'), async (req, res) => {
   try {
     const user = req.session.user;
     if (!user) return res.redirect('/auth/sign-in');
 
-    // Extract filters from query with defaults
-    let { status, dateFrom, dateTo, doctorId } = req.query;
+  
+    let { status, dateFrom, dateTo, doctor_Id } = req.query;
 
     let filter = {};
 
     if (user.role === 'patient') {
-      filter.patient_id = user._id;
-      // Patients view all their appointments optionally filtered by dates/status if needed
+      filter.patient_id = new mongoose.Types.ObjectId(user._id.toString());
     } else {
-      // For staff roles optionally filter by doctor
-      if (doctorId && mongoose.Types.ObjectId.isValid(doctorId)) {
-        filter.employee_id = doctorId;
+      if (doctor_Id && mongoose.Types.ObjectId.isValid(doctor_Id)) {
+        filter.doctor_Id = new mongoose.Types.ObjectId(doctor_Id);
       }
     }
 
     if (status) {
-      filter.status = status; // status field must exist in Appointment schema
+      filter.status = status;
     }
 
-    // Default date filter to today if none provided
+   
     const startDate = dateFrom ? new Date(dateFrom) : new Date();
+    startDate.setHours(0, 0, 0, 0);
+    
     const endDate = dateTo ? new Date(dateTo) : new Date(startDate);
-    endDate.setHours(23, 59, 59, 999);
-    filter.date = { $gte: startDate, $lte: endDate };
+    endDate.setDate(endDate.getDate() + 1);
+    endDate.setHours(0, 0, 0, 0);
+    
+    filter.date = { $gte: startDate, $lt: endDate };
 
-    // Query with population for showing patient and doctor details
+    
     const appointments = await Appointment.find(filter)
       .populate('patient_id', 'profile.fullName profile.cpr profile.phone')
-      .populate('employee_id', 'profile.fullName')
+      .populate('doctor_Id', 'profile.fullName')
       .sort({ date: 1, time: 1 })
       .lean();
 
-    // Fetch doctors list for filter dropdown (only for employee/admin roles)
+  
     let doctors = [];
     if (['employee', 'admin'].includes(user.role)) {
       doctors = await User.find({ role: 'doctor' }).select('profile.fullName').lean();
     }
+    console.log(`Appointments fetched for user ${user._id}: ${appointments.length}`);
 
-    // Pass to template, ensure filters is always defined for template safety
     res.render('appointments/index', {
       user,
       appointments,
       doctors,
-      filters: { status, dateFrom, dateTo, doctorId },
+      filters: { status, dateFrom, dateTo, doctor_Id },
     });
   } catch (error) {
     console.error('Error fetching appointments:', error);
-    res.redirect('/');
+    res.status(500).render('error', { 
+      message: 'Unable to fetch appointments',
+      user: req.session.user 
+    });
   }
 });
 
 
-// Patient Search Routes for employee/admin
 
-// Search form
+
 router.get('/search-patients', employeeOrAdmin, (req, res) => {
   res.render('appointments/search-patients', { query: '', patients: [], message: null });
 });
 
-// Search results with improved flexible query for fullName or CPR
+
 router.get('/search-patients/results', employeeOrAdmin, async (req, res) => {
   try {
     let query = req.query.q?.trim() || '';
@@ -150,15 +149,15 @@ router.get('/search-patients/results', employeeOrAdmin, async (req, res) => {
       });
     }
 
-    // Escape regex special characters to build safe regex
+  
     const escapedQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
     const regex = new RegExp(escapedQuery, 'i');
 
     const patients = await User.find({
       role: 'patient',
       $or: [
-        { 'profile.cpr': { $regex: regex } },       // partial CPR match
-        { 'profile.fullName': { $regex: regex } },  // flexible fullName match
+        { 'profile.cpr': { $regex: regex } },
+        { 'profile.fullName': { $regex: regex } },
       ],
     }).lean();
 
@@ -169,7 +168,10 @@ router.get('/search-patients/results', employeeOrAdmin, async (req, res) => {
     });
   } catch (error) {
     console.error('Patient search error:', error);
-    res.status(500).send('Server error');
+    res.status(500).render('error', { 
+      message: 'Search failed',
+      user: req.session.user 
+    });
   }
 });
 
@@ -182,17 +184,19 @@ router.get('/patient-history/:patientId', employeeOrAdmin, async (req, res) => {
       return res.status(404).send('Patient not found');
     }
 
-    const appointments = await Appointment.find({ patient_id: patientId })
-      .populate('employee_id', 'profile.fullName')
+    const appointments = await Appointment.find({ patient_id: new mongoose.Types.ObjectId(patientId) })
+      .populate('doctor_Id', 'profile.fullName')
       .lean();
 
     res.render('appointments/patient-history', { patient, appointments });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Server error');
+    res.status(500).render('error', { 
+      message: 'Unable to load patient history',
+      user: req.session.user 
+    });
   }
 });
-
 
 router.get('/new', authorize('appointments', 'create'), async (req, res) => {
   try {
@@ -218,8 +222,8 @@ router.get('/new', authorize('appointments', 'create'), async (req, res) => {
     }
 
     let patients = [];
-    if (['admin', 'doctor'].includes(req.session.user.role)) {
-      patients = await User.find({ role: 'patient' }).select('profile.fullName cpr').lean();
+    if (['admin', 'employee'].includes(req.session.user.role)) {
+      patients = await User.find({ role: 'patient' }).select('profile.fullName profile.cpr').lean();
     }
 
     res.render('appointments/new', {
@@ -237,26 +241,38 @@ router.get('/new', authorize('appointments', 'create'), async (req, res) => {
 });
 
 
-// POST create appointment
-router.post('/', authorize('appointments', 'create'), async (req, res) => {
+router.post('/', authorize('appointments', 'create'), async (req, res, next) => {
   try {
-    const { slotTime, availabilityId, doctor_id, patientId, date } = req.body;
+    const { slotTime, availabilityId, doctor_id, patientId } = req.body;
 
-    
-    if (!slotTime || !availabilityId || !doctor_id || !date) {
+    if (!slotTime || !availabilityId || !doctor_id) {
       return res.status(400).send('Missing required fields');
     }
 
+    const availability = await Availability.findById(availabilityId).lean();
+    if (!availability) {
+      return res.status(400).send('Invalid availability selected');
+    }
+    const date = availability.date;
+
     let patient_id = req.session.user._id;
     if ((req.session.user.role === 'employee' || req.session.user.role === 'admin') && patientId) {
+      
+      if (!mongoose.Types.ObjectId.isValid(patientId)) {
+        return res.status(400).send('Invalid patient ID');
+      }
+      const patient = await User.findOne({ _id: patientId, role: 'patient' });
+      if (!patient) {
+        return res.status(400).send('Invalid patient selected');
+      }
       patient_id = patientId;
     }
 
     const existingAppointment = await Appointment.findOne({
       availabilityId,
       time: slotTime,
-      employee_id: doctor_id,
-      date: new Date(date),
+      doctor_Id: doctor_id,
+      date,
     });
     if (existingAppointment) {
       return res.status(400).send('Selected slot already booked');
@@ -264,20 +280,21 @@ router.post('/', authorize('appointments', 'create'), async (req, res) => {
 
     const appointmentData = {
       availabilityId,
-      patient_id,
-      employee_id: doctor_id,
+      patient_id: new mongoose.Types.ObjectId(patient_id.toString()),
+      doctor_Id: new mongoose.Types.ObjectId(doctor_id.toString()),
       time: slotTime,
-      date: new Date(date),
+      date,
+      status: 'scheduled' 
     };
 
     await Appointment.create(appointmentData);
-    res.redirect('/appointments');
+   
+    return res.redirect('/appointments');
   } catch (error) {
-    console.log(error);
-    res.redirect('/');
+    console.error('Error creating appointment:', error);
+    next(error); 
   }
 });
-
 
 // Edit appointment form
 router.get('/:appointmentId/edit', authorize('appointments', 'update'), async (req, res) => {
@@ -292,7 +309,10 @@ router.get('/:appointmentId/edit', authorize('appointments', 'update'), async (r
     res.render('appointments/edit', { appointment });
   } catch (error) {
     console.error(error);
-    res.status(500).send('Server error');
+    res.status(500).render('error', { 
+      message: 'Unable to load appointment',
+      user: req.session.user 
+    });
   }
 });
 
@@ -301,8 +321,8 @@ router.put('/:appointmentId', authorize('appointments', 'update'), async (req, r
   try {
     const { slotTime } = req.body;
     if (!slotTime) {
-    return res.status(400).send('Slot time is required');
-  }
+      return res.status(400).send('Slot time is required');
+    }
 
     await Appointment.findByIdAndUpdate(req.params.appointmentId, { time: slotTime });
 

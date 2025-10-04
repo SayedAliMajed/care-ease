@@ -1,17 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="/stylesheets/style.css" />
   <title>Create User</title>
 </head>
-
 <body>
   <%- include('../partials/_navbar.ejs') %>
   <main class="container">
     <h1>Create User</h1>
+    
     <form action="/admin/create-user" method="POST">
       <label>Username:</label>
       <input type="text" name="username" required />
@@ -34,11 +33,10 @@
       </select>
 
       <label>Full Name:</label>
-      <input type="text" name="fullName" />
+      <input type="text" name="fullName" required />
 
-      <label for="cpr">CPR:</label><br />
-      <input type="text" id="cpr" name="cpr" <% if (role !== 'patient') { %> style="display:none" <% } %> />
-
+      <label>CPR:</label>
+      <input type="text" name="cpr" placeholder="Enter 9-digit CPR" />
 
       <label>Phone:</label>
       <input type="text" name="phone" />
@@ -54,8 +52,11 @@
 
       <button type="submit" class="button-primary">Create User</button>
     </form>
+    
+    <br>
+    <a href="/admin/users" class="button-outline">Back to User List</a>
   </main>
-   <%- include('../partials/_footer') %>
-</body>
 
+  <%- include('../partials/_footer') %>
+</body>
 </html>

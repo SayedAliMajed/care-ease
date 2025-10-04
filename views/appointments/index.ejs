@@ -67,7 +67,13 @@
                 <td><%= app.patient_id?.profile.fullName || 'N/A' %></td>
                 <td><%= app.patient_id?.profile.cpr || 'N/A' %></td>
                 <td><%= app.patient_id?.profile.phone || 'N/A' %></td>
-                <td><%= new Date(app.date).toLocaleDateString() %></td>
+                <td><% 
+                   const date = new Date(app.date); 
+                   const day = ("0" + date.getDate()).slice(-2);
+                   const month = ("0" + (date.getMonth() + 1)).slice(-2);
+                   const year = date.getFullYear();
+                   %>
+                  <%= `${day}/${month}/${year}` %>></td>
                 <td><%= app.time || app.slotTime %></td>
                 <td><%= app.employee_id?.profile.fullName || 'N/A' %></td>
                 <td><%= app.status || 'Unknown' %></td>

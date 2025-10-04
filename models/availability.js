@@ -36,19 +36,18 @@ const availabilitySchema = new mongoose.Schema({
     },
     doctorId: {
         type: Schema.Types.ObjectId,
-         ref: 'User',  
-         required: true,
-         index: true,
+        ref: 'User',  
+        required: true,
+        index: true,
     },
     isRepeating: {
         type: Boolean,
         default: false,
     },
-
     breakTimes: [BreakTimeSchema]
-    });  
+});  
 
-availabilitySchema.index({ userId: 1, date: 1 }, { unique: true });
+availabilitySchema.index({ userId: 1, doctorId: 1, date: 1 }, { unique: true });
 const Availability = mongoose.model('Availability', availabilitySchema);
 
 module.exports = Availability;

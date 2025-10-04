@@ -56,19 +56,25 @@ router.post('/sign-up', async (req, res) => {
 
 router.post('/sign-in', async (req, res) => {
   try {
-    const userInDatabase = await User.findOne({ username: req.body.username }).lean(); // fetch full user document
+    const userInDatabase = await User.findOne({ username: req.body.username }).lean();
 
     if (!userInDatabase) {
-      return res.send('Username or Password is invalid');
+      return res.render('auth/sign-in', { 
+        error: 'Username or Password is invalid',
+        username: req.body.username 
+      });
     }
 
     const validPassword = bcrypt.compareSync(req.body.password, userInDatabase.password);
 
     if (!validPassword) {
-      return res.send('Username or Password is invalid');
+      return res.render('auth/sign-in', { 
+        error: 'Username or Password is invalid',
+        username: req.body.username 
+      });
     }
 
-    // Store entire user document in session, including profile
+  
     req.session.user = userInDatabase;
 
     req.session.save(() => {
@@ -76,7 +82,10 @@ router.post('/sign-in', async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.send('Error during sign in');
+    res.render('auth/sign-in', { 
+      error: 'Error during sign in. Please try again.',
+      username: req.body.username
+    });
   }
 });
 
