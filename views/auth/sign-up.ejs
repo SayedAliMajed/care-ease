@@ -1,41 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="/stylesheets/style.css" />
   <title>Sign Up</title>
+   <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
-
 <body>
-  <div class="signup-container">
-    <div class="signup-box">
+  <div>
+    <div>
       <h2>Create a new account!</h2>
       <form action="/auth/sign-up" method="POST">
-        <label for="username">Username:</label>
-        <input type="text" name="username" id="username" required />
+        <div>
+          <label for="username">Username:</label>
+          <input type="text" name="username" id="username" required />
+        </div>
 
-        <label for="email">Email:</label>
-        <input type="email" name="email" id="email" required />
+        <div>
+          <label for="email">Email:</label>
+          <input type="email" name="email" id="email" required />
+        </div>
 
-        <label for="password">Password:</label>
-        <input type="password" name="password" id="password" required />
+        <div>
+          <label for="password">Password:</label>
+          <input type="password" name="password" id="password" required />
+        </div>
 
-        <label for="confirmPassword">Confirm Password:</label>
-        <input type="password" name="confirmPassword" id="confirmPassword" required />
+        <div>
+          <label for="confirmPassword">Confirm Password:</label>
+          <input type="password" name="confirmPassword" id="confirmPassword" required />
+        </div>
 
-        <label for="fullName">Full Name:</label>
-        <input type="text" name="fullName" id="fullName" required />
+        <div>
+          <label for="fullName">Full Name:</label>
+          <input type="text" name="fullName" id="fullName" required />
+        </div>
 
-        <label for="cpr">CPR (9 digits):</label>
-        <input type="text" name="cpr" id="cpr" pattern="[0-9]{9}" title="9 digit CPR number" required />
+        <div>
+          <label for="cpr">CPR (9 digits):</label>
+          <input type="text" name="cpr" id="cpr" pattern="[0-9]{9}" title="9 digit CPR number" required />
+        </div>
 
-        <button type="submit" class="button-primary">Sign up</button>
+        <button type="submit">Sign up</button>
       </form>
     </div>
   </div>
 </body>
-
-
 </html>

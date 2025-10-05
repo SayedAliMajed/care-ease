@@ -1,41 +1,259 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="/stylesheets/style.css" />
-  <title>Admin Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= role.toUpperCase() %> Dashboard - CareEase</title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
-
 <body>
   <%- include('../partials/_navbar.ejs') %>
-
-  <main class="container dashboard-center">
-    <h1>Welcome Admin - <%= user?.profile?.fullName || 'Administrator' %></h1>
-
-    <div class="dashboard-actions">
-      <a href="/admin/create-user" class="dashboard-card">
-        <span class="icon">➕</span>
-        <span>Create New User</span>
-      </a>
-      <a href="/admin/users" class="dashboard-card">
-        <span class="icon">👥</span>
-        <span>View Users List</span>
-      </a>
-      <a href="/auth/sign-out" class="dashboard-card outline">
-        <span class="icon">🚪</span>
-        <span>Sign Out</span>
-      </a>
+  
+  <main class="container">
+    <div class="dashboard-header">
+      <h1>
+        <% if (role === 'admin') { %>
+          Administrator Dashboard
+        <% } else if (role === 'doctor') { %>
+          Doctor Dashboard
+        <% } else if (role === 'employee') { %>
+          Staff Dashboard
+        <% } %>
+      </h1>
+      <p>Welcome, <%= user.profile.fullName %></p>
     </div>
 
-    <section>
-      <h3>Admin Dashboard</h3>
-      <p>Use the cards above to manage users and your application.</p>
-    </section>
+    <!-- Statistics Section -->
+    <div class="section">
+      <h2>Overview</h2>
+      <div class="stats-grid">
+        <% if (role === 'admin') { %>
+          <div class="stat-card">
+            <h3><%= stats.totalUsers %></h3>
+            <p>Total Users</p>
+          </div>
+          <div class="stat-card">
+            <h3><%= stats.totalDoctors %></h3>
+            <p>Doctors</p>
+          </div>
+          <div class="stat-card">
+            <h3><%= stats.totalPatients %></h3>
+            <p>Patients</p>
+          </div>
+          <div class="stat-card">
+            <h3><%= stats.totalEmployees %></h3>
+            <p>Staff</p>
+          </div>
+          <div class="stat-card">
+            <h3><%= stats.totalAppointments %></h3>
+            <p>Total Appointments</p>
+          </div>
+          <div class="stat-card">
+            <h3><%= stats.pendingAppointments %></h3>
+            <p>Pending Appointments</p>
+          </div>
+        <% } else if (role === 'doctor') { %>
+          <div class="stat-card">
+            <h3><%= stats.myAppointments %></h3>
+            <p>My Appointments</p>
+          </div>
+          <div class="stat-card">
+            <h3><%= stats.myPendingAppointments %></h3>
+            <p>Pending</p>
+          </div>
+          <div class="stat-card">
+            <h3><%= stats.myCompletedAppointments %></h3>
+            <p>Completed</p>
+          </div>
+          <div class="stat-card">
+            <h3><%= stats.myTodayAppointments %></h3>
+            <p>Today's Appointments</p>
+          </div>
+        <% } else if (role === 'employee') { %>
+          <div class="stat-card">
+            <h3><%= stats.totalAppointments %></h3>
+            <p>Total Appointments</p>
+          </div>
+          <div class="stat-card">
+            <h3><%= stats.pendingAppointments %></h3>
+            <p>Pending</p>
+          </div>
+          <div class="stat-card">
+            <h3><%= stats.todayAppointmentsCount %></h3>
+            <p>Today's Appointments</p>
+          </div>
+          <div class="stat-card">
+            <h3><%= stats.totalDoctors %></h3>
+            <p>Doctors</p>
+          </div>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="section">
+      <h2>Quick Actions</h2>
+      <div class="action-buttons">
+        <% if (role === 'admin') { %>
+          <a href="/admin/users" class="button button-primary">Manage Users</a>
+          <a href="/admin/create-user" class="button button-secondary">Create User</a>
+        <% } %>
+        <a href="/appointments" class="button button-primary">View Appointments</a>
+        <a href="/appointments/new" class="button button-secondary">New Appointment</a>
+        <% if (role === 'admin' || role === 'employee') { %>
+          <a href="/appointments/search-patients" class="button button-info">Search Patients</a>
+        <% } %>
+        <% if (role === 'doctor') { %>
+          <a href="/availabilitys" class="button button-info">My Availability</a>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Today's Appointments -->
+    <div class="section">
+      <h2>Today's Appointments</h2>
+      <% if (todayAppointments.length > 0) { %>
+        <div class="table-container">
+          <table class="styled-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Patient</th>
+                <th>Doctor</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% todayAppointments.forEach(function(appointment) { %>
+                <tr>
+                  <td><%= appointment.time %></td>
+                  <td><%= appointment.patient_id.profile.fullName %></td>
+                  <td><%= appointment.doctor_Id.profile.fullName %></td>
+                  <td>
+                    <span class="status-badge status-<%= appointment.status %>">
+                      <%= appointment.status %>
+                    </span>
+                  </td>
+                  <td>
+                    <a href="/appointments/<%= appointment._id %>/edit" class="button button-small">View</a>
+                    <% if (role === 'doctor' && appointment.status === 'scheduled') { %>
+                      <a href="/appointments/<%= appointment._id %>/prescription" class="button button-small button-primary">Add Rx</a>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %>
+        <p>No appointments scheduled for today.</p>
+      <% } %>
+    </div>
+
+    <!-- Role-specific sections -->
+    <% if (role === 'admin' && recentAppointments.length > 0) { %>
+      <div class="section">
+        <h2>Recent Appointments</h2>
+        <div class="table-container">
+          <table class="styled-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Patient</th>
+                <th>Doctor</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% recentAppointments.forEach(function(appointment) { %>
+                <tr>
+                  <td><%= new Date(appointment.date).toLocaleDateString() %></td>
+                  <td><%= appointment.patient_id.profile.fullName %></td>
+                  <td><%= appointment.doctor_Id.profile.fullName %></td>
+                  <td>
+                    <span class="status-badge status-<%= appointment.status %>">
+                      <%= appointment.status %>
+                    </span>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% } %>
+
+    <% if (role === 'doctor' && myAppointments.length > 0) { %>
+      <div class="section">
+        <h2>My Upcoming Appointments</h2>
+        <div class="table-container">
+          <table class="styled-table">
+            <thead>
+              <tr>
+                <th>Date & Time</th>
+                <th>Patient</th>
+                <th>CPR</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% myAppointments.forEach(function(appointment) { %>
+                <tr>
+                  <td>
+                    <strong><%= new Date(appointment.date).toLocaleDateString() %></strong><br>
+                    <small><%= appointment.time %></small>
+                  </td>
+                  <td><%= appointment.patient_id.profile.fullName %></td>
+                  <td><%= appointment.patient_id.profile.cpr %></td>
+                  <td>
+                    <span class="status-badge status-<%= appointment.status %>">
+                      <%= appointment.status %>
+                    </span>
+                  </td>
+                  <td>
+                    <a href="/appointments/<%= appointment._id %>/prescription" class="button button-small button-primary">Add Prescription</a>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% } %>
+
+    <% if (role === 'employee' && recentAppointments.length > 0) { %>
+      <div class="section">
+        <h2>Recent Appointments</h2>
+        <div class="table-container">
+          <table class="styled-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Patient</th>
+                <th>Doctor</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% recentAppointments.forEach(function(appointment) { %>
+                <tr>
+                  <td><%= new Date(appointment.date).toLocaleDateString() %></td>
+                  <td><%= appointment.patient_id.profile.fullName %></td>
+                  <td><%= appointment.doctor_Id.profile.fullName %></td>
+                  <td>
+                    <span class="status-badge status-<%= appointment.status %>">
+                      <%= appointment.status %>
+                    </span>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% } %>
   </main>
-
-  <%- include('../partials/_footer') %>
 </body>
-
 </html>

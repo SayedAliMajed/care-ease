@@ -1,15 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <title>Search Patients</title>
-  <link rel="stylesheet" href="/stylesheets/style.css" />
+   <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
-
 <body>
-  <%- include('../partials/_navbar') %>
-  <main class="container">
+  <%- include('../partials/_navbar.ejs') %>
+  <main>
     <h1>Patient Search</h1>
     <form action="/appointments/search-patients/results" method="GET">
       <input
@@ -23,16 +21,8 @@
       <button type="submit">Search</button>
     </form>
 
-    <% function highlight(text, query) { 
-      if (!text) return '';               
-      if (!query) return text;
-      const escapedQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-      const regex = new RegExp(escapedQuery, 'gi');
-      return text.replace(regex, match => `<mark>${match}</mark>`);
-    } %>
-
     <% if (patients && patients.length) { %>
-      <table class="styled-table">
+      <table border="1">
         <thead>
           <tr>
             <th>Name</th>
@@ -44,8 +34,8 @@
         <tbody>
           <% patients.forEach(patient => { %>
             <tr>
-              <td><%- highlight(patient.profile.fullName, query) %></td>
-              <td><%- highlight(patient.profile.cpr, query) %></td>
+              <td><%= patient.profile.fullName %></td>
+              <td><%= patient.profile.cpr %></td>
               <td><%= patient.profile.phone %></td>
               <td>
                 <a href="/appointments/patient-history/<%= patient._id %>">View History</a>
@@ -58,7 +48,5 @@
       <p>No patients found for "<%= query %>"</p>
     <% } %>
   </main>
-  <%- include('../partials/_footer') %>
 </body>
-
 </html>

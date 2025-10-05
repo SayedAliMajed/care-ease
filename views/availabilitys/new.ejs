@@ -3,62 +3,75 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="/stylesheets/style.css" />
   <title>New Availability</title>
+   <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
 <body>
   <%- include('../partials/_navbar.ejs') %>
-  <main class="container">
+  <main>
     <h2>Add New Availability</h2>
     
     <% if (typeof error !== 'undefined' && error) { %>
-      <div style="color: red; margin-bottom: 16px; padding: 10px; border: 1px solid red; border-radius: 4px;">
-        <%= error %>
-      </div>
+      <p style="color: red;"><%= error %></p>
     <% } %>
     
     <form action="/availabilitys" method="POST">
-      <label>Date:
-        <input type="date" name="date" required />
-      </label>
-
-      <label>Opening Time:
-        <input type="time" name="openingTime" required />
-      </label>
-
-      <label>Closing Time:
-        <input type="time" name="closingTime" required />
-      </label>
-
-      <label>Slot Duration (minutes):
-        <input type="number" name="duration" min="1" required />
-      </label>
-
-      <label for="doctorId">Assign to Doctor</label>
-        <select name="doctorId" id="doctorId" required>
-        <% doctors.forEach(doctor => { %>
-        <option value="<%= doctor._id %>"><%= doctor.profile.fullName %></option>
-        <% }) %>
-      </select>
-      
-      <div class="break-time-section">
-        <h3>Break Time (Optional)</h3>
-        <label>Break Start Time:
-          <input type="time" name="breakStartTime" />
-        </label>
-
-        <label>Break End Time:
-          <input type="time" name="breakEndTime" />
+      <div>
+        <label>Date:
+          <input type="date" name="date" required />
         </label>
       </div>
 
-      <label for="isRepeating">Repeat Daily:</label>
-      <input type="checkbox" name="isRepeating" id="isRepeating" />
+      <div>
+        <label>Opening Time:
+          <input type="time" name="openingTime" required />
+        </label>
+      </div>
 
-      <button type="submit" class="button-primary">Add Availability</button>
+      <div>
+        <label>Closing Time:
+          <input type="time" name="closingTime" required />
+        </label>
+      </div>
+
+      <div>
+        <label>Slot Duration (minutes):
+          <input type="number" name="duration" min="1" required />
+        </label>
+      </div>
+
+      <div>
+        <label for="doctorId">Assign to Doctor</label>
+        <select name="doctorId" id="doctorId" required>
+          <% doctors.forEach(doctor => { %>
+            <option value="<%= doctor._id %>"><%= doctor.profile.fullName %></option>
+          <% }) %>
+        </select>
+      </div>
+      
+      <div>
+        <h3>Break Time (Optional)</h3>
+        <div>
+          <label>Break Start Time:
+            <input type="time" name="breakStartTime" />
+          </label>
+        </div>
+
+        <div>
+          <label>Break End Time:
+            <input type="time" name="breakEndTime" />
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <label for="isRepeating">Repeat Daily:</label>
+        <input type="checkbox" name="isRepeating" id="isRepeating" />
+      </div>
+
+      <button type="submit">Add Availability</button>
     </form>
-    <a href="/availabilitys" class="button-outline">Back to List</a>
+    <a href="/availabilitys">Back to List</a>
   </main>
-   <%- include('../partials/_footer') %>
 </body>
 </html>

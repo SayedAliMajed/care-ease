@@ -3,60 +3,84 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="/stylesheets/style.css" />
+   <link rel="stylesheet" href="/stylesheets/style.css">
   <title>Create User</title>
 </head>
 <body>
   <%- include('../partials/_navbar.ejs') %>
-  <main class="container">
+  <main>
     <h1>Create User</h1>
     
+    <% if (error) { %>
+      <p style="color: red;"><%= error %></p>
+    <% } %>
+
     <form action="/admin/create-user" method="POST">
-      <label>Username:</label>
-      <input type="text" name="username" required />
+      <div>
+        <label>Username:</label>
+        <input type="text" name="username" value="<%= formData.username || '' %>" required />
+      </div>
 
-      <label>Email:</label>
-      <input type="email" name="email" required />
+      <div>
+        <label>Email:</label>
+        <input type="email" name="email" value="<%= formData.email || '' %>" required />
+      </div>
 
-      <label>Password:</label>
-      <input type="password" name="password" required />
+      <div>
+        <label>Password:</label>
+        <input type="password" name="password" required />
+      </div>
 
-      <label>Confirm Password:</label>
-      <input type="password" name="confirmPassword" required />
+      <div>
+        <label>Confirm Password:</label>
+        <input type="password" name="confirmPassword" required />
+      </div>
 
-      <label>Role:</label>
-      <select name="role" required>
-        <option value="patient">Patient</option>
-        <option value="doctor">Doctor</option>
-        <option value="employee">Employee</option>
-        <option value="admin">Admin</option>
-      </select>
+      <div>
+        <label>Role:</label>
+        <select name="role" required>
+          <option value="patient">Patient</option>
+          <option value="doctor">Doctor</option>
+          <option value="employee">Employee</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
 
-      <label>Full Name:</label>
-      <input type="text" name="fullName" required />
+      <div>
+        <label>Full Name:</label>
+        <input type="text" name="fullName" value="<%= formData.fullName || '' %>" required />
+      </div>
 
-      <label>CPR:</label>
-      <input type="text" name="cpr" placeholder="Enter 9-digit CPR" />
+      <div>
+        <label>CPR:</label>
+        <input type="text" name="cpr" value="<%= formData.cpr || '' %>" placeholder="Enter 9-digit CPR" />
+      </div>
 
-      <label>Phone:</label>
-      <input type="text" name="phone" />
+      <div>
+        <label>Phone:</label>
+        <input type="text" name="phone" value="<%= formData.phone || '' %>" />
+      </div>
 
-      <label>Address:</label>
-      <input type="text" name="address" />
+      <div>
+        <label>Address:</label>
+        <input type="text" name="address" value="<%= formData.address || '' %>" />
+      </div>
 
-      <label>Department (for Employee):</label>
-      <input type="text" name="department" />
+      <div>
+        <label>Department (for Employee):</label>
+        <input type="text" name="department" value="<%= formData.department || '' %>" />
+      </div>
 
-      <label>Specialty (for Doctor):</label>
-      <input type="text" name="specialty" />
+      <div>
+        <label>Specialty (for Doctor):</label>
+        <input type="text" name="specialty" value="<%= formData.specialty || '' %>" />
+      </div>
 
-      <button type="submit" class="button-primary">Create User</button>
+      <button type="submit">Create User</button>
     </form>
     
     <br>
-    <a href="/admin/users" class="button-outline">Back to User List</a>
+    <a href="/admin/users">Back to User List</a>
   </main>
-
-  <%- include('../partials/_footer') %>
 </body>
 </html>

@@ -64,6 +64,7 @@ app.get('/', (req, res) => {
   res.render('index.ejs');
 });
 
+
 app.use('/auth', authController);
 
 // Protected Routes

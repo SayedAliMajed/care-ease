@@ -12,6 +12,7 @@
   border-radius: 10px;
   margin-bottom: 4rem;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 .hero-content h1 {
@@ -20,6 +21,8 @@
   font-weight: 900;
   text-shadow: 0 3px 10px rgba(0,0,0,0.7);
   margin-bottom: 1.5rem;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #092d53;
 }
 
 .hero-content p {
@@ -27,9 +30,11 @@
   margin-left: auto;
   margin-right: auto;
   font-size: clamp(1.2rem, 3.5vw, 1.6rem);
-  color: #0a294e;
+  color: #092d53;
   text-shadow: 0 2px 6px rgba(0,0,0,0.4);
   margin-bottom: 2rem;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 500;
 }
 
 /* Features Grid - Responsive improvements */
@@ -51,17 +56,35 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
   cursor: default;
+  font-family: Arial, Helvetica, sans-serif;
+  border: 1px solid #e3f0fc;
 }
 
 .feature-card:hover,
 .feature-card:focus-within {
   transform: translateY(-10px);
   box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+  background-color: #ffffff;
 }
 
 .feature-card img {
   width: 80px;
   margin-bottom: 1.25rem;
+}
+
+.feature-card h3 {
+  color: #004777;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  font-size: 1.4rem;
+}
+
+.feature-card p {
+  color: #333;
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.6;
+  margin: 0;
 }
 
 /* About Section */
@@ -74,12 +97,59 @@
   max-width: 900px;
   margin-left: auto;
   margin-right: auto;
+  font-family: Arial, Helvetica, sans-serif;
+  border: 1px solid #dbeaff;
 }
 
 .about-section h2 {
   font-size: 2rem;
   color: #013a63;
   margin-bottom: 1.5rem;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 700;
+}
+
+.about-section p {
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+/* Call to Action Button */
+.cta-button {
+  display: inline-block;
+  background-color: #0073e6;
+  color: white;
+  padding: 1rem 2.5rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1.2rem;
+  font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease;
+  margin-top: 1rem;
+  border: none;
+  cursor: pointer;
+}
+
+.cta-button:hover,
+.cta-button:focus {
+  background-color: #005f9e;
+  text-decoration: none;
+  color: white;
+  outline: none;
+}
+
+/* Section Headings Consistency */
+.features-section h2,
+.about-section h2 {
+  text-align: center;
+  color: #004777;
+  margin-bottom: 3rem;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 700;
+  font-size: 2.2rem;
 }
 
 /* Responsive Text Adjustments */
@@ -108,6 +178,12 @@
   .about-section {
     padding: 2rem 1rem;
   }
+  
+  .features-section h2,
+  .about-section h2 {
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+  }
 }
 
 @media (max-width: 500px) {
@@ -123,4 +199,91 @@
   .feature-card img {
     width: 60px;
   }
+  
+  .cta-button {
+    padding: 0.8rem 2rem;
+    font-size: 1.1rem;
+  }
+  
+  .features-section h2,
+  .about-section h2 {
+    font-size: 1.6rem;
+  }
+}
+
+/* Additional Homepage Specific Styles */
+.hero-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+}
+
+.hero-buttons .cta-button {
+  margin-top: 0;
+}
+
+.hero-buttons .cta-button.secondary {
+  background-color: transparent;
+  border: 2px solid white;
+  color: white;
+}
+
+.hero-buttons .cta-button.secondary:hover,
+.hero-buttons .cta-button.secondary:focus {
+  background-color: white;
+  color: #0073e6;
+}
+
+/* Feature Icons Styling */
+.feature-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0073e6, #005f9e);
+  border-radius: 50%;
+  padding: 1rem;
+}
+
+.feature-icon img {
+  width: 100%;
+  height: auto;
+  margin: 0;
+  filter: brightness(0) invert(1);
+}
+
+/* Statistics Section (if used) */
+.stats-section {
+  background: linear-gradient(135deg, #0073e6, #005f9e);
+  color: white;
+  padding: 4rem 2rem;
+  text-align: center;
+  border-radius: 12px;
+  margin: 4rem auto;
+  max-width: 1200px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.stat-item h3 {
+  font-size: 2.5rem;
+  margin: 0;
+  font-weight: 700;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.stat-item p {
+  margin: 0.5rem 0 0 0;
+  font-size: 1.1rem;
+  font-family: Arial, Helvetica, sans-serif;
+  opacity: 0.9;
 }

@@ -1,124 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="/stylesheets/style.css" />
-  <title>Your Appointments</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Appointments</title>
+   <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
-
 <body>
   <%- include('../partials/_navbar.ejs') %>
-  <main class="container">
+  
+  <main>
+    <h1>Appointments</h1>
 
-    <h1>Your Appointments</h1>
-
-    <% if (user.role === 'employee' || user.role === 'admin') { %>
-      <a href="/appointments/new" class="button-outline">Add New Appointment</a>
-
-      <form method="GET" action="/appointments" class="filter-form">
-        <label for="status">Status:</label>
-        <select id="status" name="status">
-          <option value="" <%= !filters.status ? 'selected' : '' %>>All</option>
-          <option value="scheduled" <%= filters.status === 'scheduled' ? 'selected' : '' %>>Scheduled</option>
-          <option value="cancelled" <%= filters.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
-          <option value="completed" <%= filters.status === 'completed' ? 'selected' : '' %>>Completed</option>
-        </select>
-
-        <label for="dateFrom">From:</label>
-        <input type="date" id="dateFrom" name="dateFrom" value="<%= filters.dateFrom || '' %>">
-
-        <label for="dateTo">To:</label>
-        <input type="date" id="dateTo" name="dateTo" value="<%= filters.dateTo || '' %>">
-
-        <% if (doctors && doctors.length) { %>
-          <label for="doctorId">Doctor:</label>
-          <select id="doctorId" name="doctorId">
-            <option value="" <%= !filters.doctorId ? 'selected' : '' %>>All</option>
-            <% doctors.forEach(doctor => { %>
-              <option value="<%= doctor._id %>" <%= filters.doctorId === doctor._id.toString() ? 'selected' : '' %>>
-                <%= doctor.profile.fullName %>
-              </option>
-            <% }) %>
-          </select>
+    <!-- Filters -->
+    <form method="GET" action="/appointments">
+      <div>
+        <% if (user.role === 'employee' || user.role === 'admin') { %>
+          <div>
+            <label for="doctor_Id">Doctor:</label>
+            <select name="doctor_Id" id="doctor_Id">
+              <option value="">All Doctors</option>
+              <% doctors.forEach(function(doctor) { %>
+                <option value="<%= doctor._id %>" 
+                  <%= filters.doctor_Id === doctor._id.toString() ? 'selected' : '' %>>
+                  <%= doctor.profile.fullName %>
+                </option>
+              <% }); %>
+            </select>
+          </div>
         <% } %>
 
-        <button type="submit">Filter</button>
-      </form>
+        <div>
+          <label for="status">Status:</label>
+          <select name="status" id="status">
+            <option value="">All Statuses</option>
+            <option value="scheduled" <%= filters.status === 'scheduled' ? 'selected' : '' %>>Scheduled</option>
+            <option value="completed" <%= filters.status === 'completed' ? 'selected' : '' %>>Completed</option>
+            <option value="cancelled" <%= filters.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
+          </select>
+        </div>
 
-      <table class="styled-table">
+        <div>
+          <label for="dateFrom">From:</label>
+          <input type="date" id="dateFrom" name="dateFrom" value="<%= filters.dateFrom || '' %>">
+        </div>
+
+        <div>
+          <label for="dateTo">To:</label>
+          <input type="date" id="dateTo" name="dateTo" value="<%= filters.dateTo || '' %>">
+        </div>
+
+        <div>
+          <button type="submit">Filter</button>
+          <a href="/appointments">Clear</a>
+        </div>
+      </div>
+    </form>
+
+    <!-- Appointments Table -->
+    <div>
+      <table border="1">
         <thead>
           <tr>
-            <th>Patient Name</th>
-            <th>CPR</th>
-            <th>Phone</th>
             <th>Date</th>
             <th>Time</th>
+            <th>Patient</th>
             <th>Doctor</th>
             <th>Status</th>
             <th>Actions</th>
+            <th>Prescription</th>
           </tr>
         </thead>
         <tbody>
-          <% if (appointments.length) { %>
-            <% appointments.forEach(app => { %>
+          <% if (appointments.length === 0) { %>
+            <tr>
+              <td colspan="7">No appointments found</td>
+            </tr>
+          <% } else { %>
+            <% appointments.forEach(function(appointment) { %>
               <tr>
-                <td><%= app.patient_id?.profile.fullName || 'N/A' %></td>
-                <td><%= app.patient_id?.profile.cpr || 'N/A' %></td>
-                <td><%= app.patient_id?.profile.phone || 'N/A' %></td>
-                <td><% 
-                   const date = new Date(app.date); 
-                   const day = ("0" + date.getDate()).slice(-2);
-                   const month = ("0" + (date.getMonth() + 1)).slice(-2);
-                   const year = date.getFullYear();
-                   %>
-                  <%= `${day}/${month}/${year}` %>></td>
-                <td><%= app.time || app.slotTime %></td>
-                <td><%= app.employee_id?.profile.fullName || 'N/A' %></td>
-                <td><%= app.status || 'Unknown' %></td>
+                <td><%= appointment.date.toDateString() %></td>
+                <td><%= appointment.time %></td>
                 <td>
-                  <a href="/appointments/<%= app._id %>/edit" class="button-outline">Edit</a>
-                  <form action="/appointments/<%= app._id %>?_method=DELETE" method="POST" style="display:inline;">
-                    <button type="submit" onclick="return confirm('Are you sure you want to delete this appointment?');">
-                      Delete
-                    </button>
-                  </form>
+                  <%= appointment.patient_id.profile.fullName %>
+                  <% if (appointment.patient_id.profile.cpr) { %>
+                    <br>CPR: <%= appointment.patient_id.profile.cpr %>
+                  <% } %>
+                </td>
+                <td><%= appointment.doctor_Id.profile.fullName %></td>
+                <td><%= appointment.status %></td>
+                <td>
+                  <div>
+                    <% if (user.role === 'admin' || user.role === 'employee') { %>
+                      <a href="/appointments/<%= appointment._id %>/edit">Edit</a>
+                      <form action="/appointments/<%= appointment._id %>?_method=DELETE" method="POST" style="display: inline;">
+                        <button type="submit" onclick="return confirm('Are you sure you want to delete this appointment?')">
+                          Delete
+                        </button>
+                      </form>
+                    <% } else if (user.role === 'patient') { %>
+                      <a href="/appointments/<%= appointment._id %>/edit">View</a>
+                    <% } %>
+                  </div>
+                </td>
+                <td>
+                  <% if (appointment.status === 'scheduled' && (user.role === 'doctor' || user.role === 'admin')) { %>
+                    <a href="/appointments/<%= appointment._id %>/prescription">Add Prescription</a>
+                  <% } else if (appointment.prescription) { %>
+                    <strong>Prescribed</strong>
+                    <br>
+                    <small>
+                      <strong>Prescription:</strong><br>
+                      <%= appointment.prescription.split('\n').join('<br>') %>
+                    </small>
+                  <% } else { %>
+                    No Prescription
+                  <% } %>
                 </td>
               </tr>
-            <% }) %>
-          <% } else { %>
-            <tr><td colspan="8">No appointments found with the selected criteria.</td></tr>
+            <% }); %>
           <% } %>
         </tbody>
       </table>
+    </div>
 
-    <% } else if (user.role === 'patient') { %>
-
-      <a href="/appointments/new" class="button-outline">Add New Appointment</a>
-
-      <ul class="appointments-list">
-        <% if (appointments && appointments.length > 0) { %>
-          <% appointments.forEach((appointment) => { %>
-            <li>
-              <a href="/appointments/<%= appointment._id %>">
-                <%= new Date(appointment.date).toLocaleDateString() %>
-                <% if (appointment.time) { %> - <%= appointment.time %> <% } %>
-                <% if (appointment.status) { %> (<%= appointment.status %>) <% } %>
-              </a>
-              <a href="/appointments/<%= appointment._id %>/edit" class="button-outline">Edit</a>
-            </li>
-          <% }) %>
-        <% } else { %>
-          <p>You have not created any appointments yet.</p>
+    <!-- New Appointment Button -->
+    <% if (user.role === 'admin' || user.role === 'employee' || user.role === 'patient') { %>
+      <div>
+        <a href="/appointments/new">New Appointment</a>
+        
+        <% if (user.role === 'admin' || user.role === 'employee') { %>
+          <a href="/appointments/search-patients">Search Patients</a>
         <% } %>
-      </ul>
-
-    <% } else { %>
-      <p>Unauthorized access.</p>
+      </div>
     <% } %>
-
   </main>
 </body>
-
 </html>

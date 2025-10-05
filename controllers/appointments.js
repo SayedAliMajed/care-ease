@@ -7,7 +7,6 @@ const User = require('../models/user');
 const Availability = require('../models/availability');
 const Appointment = require('../models/appointment');
 
-// Middleware to allow employees and admins only
 function employeeOrAdmin(req, res, next) {
   const role = req.session.user?.role;
   if (role === 'employee' || role === 'admin') return next();
@@ -62,7 +61,6 @@ router.get('/availability/:availabilityId', authorize('appointments', 'read'), a
 
     res.render('appointments/slots', { availability, availableSlots });
   } catch (error) {
-    console.error(error);
     res.redirect('/');
   }
 });
@@ -71,9 +69,6 @@ router.get('/availability/:availabilityId', authorize('appointments', 'read'), a
 router.get('/', authorize('appointments', 'read'), async (req, res) => {
   try {
     const user = req.session.user;
-    if (!user) return res.redirect('/auth/sign-in');
-
-  
     let { status, dateFrom, dateTo, doctor_Id } = req.query;
 
     let filter = {};
@@ -90,7 +85,6 @@ router.get('/', authorize('appointments', 'read'), async (req, res) => {
       filter.status = status;
     }
 
-   
     const startDate = dateFrom ? new Date(dateFrom) : new Date();
     startDate.setHours(0, 0, 0, 0);
     
@@ -100,19 +94,16 @@ router.get('/', authorize('appointments', 'read'), async (req, res) => {
     
     filter.date = { $gte: startDate, $lt: endDate };
 
-    
     const appointments = await Appointment.find(filter)
       .populate('patient_id', 'profile.fullName profile.cpr profile.phone')
       .populate('doctor_Id', 'profile.fullName')
       .sort({ date: 1, time: 1 })
       .lean();
 
-  
     let doctors = [];
     if (['employee', 'admin'].includes(user.role)) {
       doctors = await User.find({ role: 'doctor' }).select('profile.fullName').lean();
     }
-    console.log(`Appointments fetched for user ${user._id}: ${appointments.length}`);
 
     res.render('appointments/index', {
       user,
@@ -121,22 +112,20 @@ router.get('/', authorize('appointments', 'read'), async (req, res) => {
       filters: { status, dateFrom, dateTo, doctor_Id },
     });
   } catch (error) {
-    console.error('Error fetching appointments:', error);
-    res.status(500).render('error', { 
-      message: 'Unable to fetch appointments',
-      user: req.session.user 
-    });
+    res.redirect('/');
   }
 });
 
-
-
-
-router.get('/search-patients', employeeOrAdmin, (req, res) => {
-  res.render('appointments/search-patients', { query: '', patients: [], message: null });
+// Search patients
+router.get('/search-patients', employeeOrAdmin, async (req, res) => {
+  try {
+    res.render('appointments/search-patients', { query: '', patients: [], message: null });
+  } catch (error) {
+    res.redirect('/appointments');
+  }
 });
 
-
+// Search patients results
 router.get('/search-patients/results', employeeOrAdmin, async (req, res) => {
   try {
     let query = req.query.q?.trim() || '';
@@ -149,7 +138,6 @@ router.get('/search-patients/results', employeeOrAdmin, async (req, res) => {
       });
     }
 
-  
     const escapedQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
     const regex = new RegExp(escapedQuery, 'i');
 
@@ -167,43 +155,31 @@ router.get('/search-patients/results', employeeOrAdmin, async (req, res) => {
       message: patients.length ? null : `No patients found for "${query}"`,
     });
   } catch (error) {
-    console.error('Patient search error:', error);
-    res.status(500).render('error', { 
-      message: 'Search failed',
-      user: req.session.user 
-    });
+    res.redirect('/appointments/search-patients');
   }
 });
 
-// Patient history view with appointments and prescriptions
+// Patient history
 router.get('/patient-history/:patientId', employeeOrAdmin, async (req, res) => {
   try {
-    const patientId = req.params.patientId;
-    const patient = await User.findById(patientId).lean();
+    const patient = await User.findById(req.params.patientId).lean();
     if (!patient || patient.role !== 'patient') {
       return res.status(404).send('Patient not found');
     }
 
-    const appointments = await Appointment.find({ patient_id: new mongoose.Types.ObjectId(patientId) })
+    const appointments = await Appointment.find({ patient_id: new mongoose.Types.ObjectId(req.params.patientId) })
       .populate('doctor_Id', 'profile.fullName')
       .lean();
 
     res.render('appointments/patient-history', { patient, appointments });
   } catch (error) {
-    console.error(error);
-    res.status(500).render('error', { 
-      message: 'Unable to load patient history',
-      user: req.session.user 
-    });
+    res.redirect('/appointments');
   }
 });
 
+// New appointment form
 router.get('/new', authorize('appointments', 'create'), async (req, res) => {
   try {
-    if (!req.session.user) {
-      return res.redirect('/auth/sign-in');
-    }
-
     const doctors = await User.find({ role: 'doctor' }).select('profile.fullName').lean();
     const availabilities = await Availability.find({}).sort({ date: 1, openingTime: 1 }).lean();
 
@@ -235,13 +211,12 @@ router.get('/new', authorize('appointments', 'create'), async (req, res) => {
       patients,
     });
   } catch (error) {
-    console.error(error);
     res.redirect('/appointments');
   }
 });
 
-
-router.post('/', authorize('appointments', 'create'), async (req, res, next) => {
+// Create appointment
+router.post('/', authorize('appointments', 'create'), async (req, res) => {
   try {
     const { slotTime, availabilityId, doctor_id, patientId } = req.body;
 
@@ -257,10 +232,6 @@ router.post('/', authorize('appointments', 'create'), async (req, res, next) => 
 
     let patient_id = req.session.user._id;
     if ((req.session.user.role === 'employee' || req.session.user.role === 'admin') && patientId) {
-      
-      if (!mongoose.Types.ObjectId.isValid(patientId)) {
-        return res.status(400).send('Invalid patient ID');
-      }
       const patient = await User.findOne({ _id: patientId, role: 'patient' });
       if (!patient) {
         return res.status(400).send('Invalid patient selected');
@@ -284,39 +255,30 @@ router.post('/', authorize('appointments', 'create'), async (req, res, next) => 
       doctor_Id: new mongoose.Types.ObjectId(doctor_id.toString()),
       time: slotTime,
       date,
-      status: 'scheduled' 
+      status: 'scheduled'
     };
 
     await Appointment.create(appointmentData);
-   
-    return res.redirect('/appointments');
+    res.redirect('/appointments');
   } catch (error) {
-    console.error('Error creating appointment:', error);
-    next(error); 
+    res.redirect('/appointments/new');
   }
 });
 
 // Edit appointment form
 router.get('/:appointmentId/edit', authorize('appointments', 'update'), async (req, res) => {
   try {
-    const appointmentId = req.params.appointmentId;
-    const appointment = await Appointment.findById(appointmentId).lean();
-
+    const appointment = await Appointment.findById(req.params.appointmentId).lean();
     if (!appointment) {
       return res.status(404).send('Appointment not found');
     }
-
     res.render('appointments/edit', { appointment });
   } catch (error) {
-    console.error(error);
-    res.status(500).render('error', { 
-      message: 'Unable to load appointment',
-      user: req.session.user 
-    });
+    res.redirect('/appointments');
   }
 });
 
-// PUT update appointment
+// Update appointment
 router.put('/:appointmentId', authorize('appointments', 'update'), async (req, res) => {
   try {
     const { slotTime } = req.body;
@@ -325,10 +287,8 @@ router.put('/:appointmentId', authorize('appointments', 'update'), async (req, r
     }
 
     await Appointment.findByIdAndUpdate(req.params.appointmentId, { time: slotTime });
-
     res.redirect('/appointments');
   } catch (error) {
-    console.log(error);
     res.redirect('/appointments');
   }
 });
@@ -339,7 +299,82 @@ router.delete('/:appointmentId', authorize('appointments', 'delete'), async (req
     await Appointment.findByIdAndDelete(req.params.appointmentId);
     res.redirect('/appointments');
   } catch (error) {
-    console.log(error);
+    res.redirect('/appointments');
+  }
+});
+
+// Prescription form
+router.get('/:appointmentId/prescription', authorize('appointments', 'update'), async (req, res) => {
+  try {
+    const appointment = await Appointment.findById(req.params.appointmentId)
+      .populate('patient_id', 'profile.fullName profile.cpr')
+      .populate('doctor_Id', 'profile.fullName')
+      .lean();
+
+    if (!appointment) {
+      return res.status(404).send('Appointment not found');
+    }
+
+    res.render('appointments/prescription', {
+      appointment,
+      user: req.session.user,
+      error: null
+    });
+  } catch (error) {
+    res.redirect('/appointments');
+  }
+});
+
+// Create prescription
+router.post('/:appointmentId/prescription', authorize('appointments', 'update'), async (req, res) => {
+  try {
+    const { medication, dosage, instructions, duration } = req.body;
+
+    const appointment = await Appointment.findById(req.params.appointmentId)
+      .populate('patient_id', 'profile.fullName profile.cpr')
+      .populate('doctor_Id', 'profile.fullName')
+      .lean();
+
+    if (!appointment) {
+      return res.status(404).send('Appointment not found');
+    }
+
+    if (!medication) {
+      return res.render('appointments/prescription', {
+        appointment,
+        user: req.session.user,
+        error: 'Medication is required'
+      });
+    }
+
+    const prescriptionText = `Medication: ${medication}\nDosage: ${dosage || 'N/A'}\nInstructions: ${instructions || 'N/A'}\nDuration: ${duration || 'N/A'}`;
+
+    await Appointment.findByIdAndUpdate(req.params.appointmentId, {
+      prescription: prescriptionText,
+      status: 'completed'
+    });
+
+    res.redirect('/appointments');
+  } catch (error) {
+    res.render('appointments/prescription', {
+      appointment: await Appointment.findById(req.params.appointmentId)
+        .populate('patient_id', 'profile.fullName profile.cpr')
+        .populate('doctor_Id', 'profile.fullName')
+        .lean(),
+      user: req.session.user,
+      error: 'Failed to save prescription. Please try again.'
+    });
+  }
+});
+
+// Mark appointment complete
+router.put('/:appointmentId/complete', authorize('appointments', 'update'), async (req, res) => {
+  try {
+    await Appointment.findByIdAndUpdate(req.params.appointmentId, {
+      status: 'completed'
+    });
+    res.redirect('/appointments');
+  } catch (error) {
     res.redirect('/appointments');
   }
 });

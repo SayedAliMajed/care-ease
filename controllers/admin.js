@@ -1,53 +1,164 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
+const mongoose = require('mongoose');
 const User = require('../models/user');
 const Appointment = require('../models/appointment');
 const authorize = require('../middleware/authorize');
 
 const router = express.Router();
 
-// Role check middleware
-function isAdmin(req, res, next) {
-  if (req.session?.user?.role === 'admin') return next();
-  return res.status(403).send('Forbidden: Admins only');
-}
 
-// Create User Routes
-router.get('/create-user', isAdmin, (req, res) => {
-  res.render('admin/create-user.ejs');
+// Unified Dashboard Route with proper authorization
+router.get('/dashboard', authorize('dashboard', 'read'), async (req, res) => {
+  try {
+    const userRole = req.session.user.role;
+    const userId = req.session.user._id;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    let dashboardData = {
+      user: req.session.user,
+      role: userRole,
+      stats: {},
+      todayAppointments: [],
+      recentAppointments: [],
+      myAppointments: []
+    };
+
+    // Today's appointments
+    let todayAppointmentsQuery = { date: { $gte: today, $lt: tomorrow } };
+    if (userRole === 'doctor') {
+      todayAppointmentsQuery.doctor_Id = userId;
+    }
+
+    dashboardData.todayAppointments = await Appointment.find(todayAppointmentsQuery)
+      .populate('patient_id', 'profile.fullName profile.cpr profile.phone')
+      .populate('doctor_Id', 'profile.fullName')
+      .sort({ time: 1 })
+      .limit(10)
+      .lean();
+
+    // Role-specific data
+    if (userRole === 'admin') {
+      dashboardData.stats = {
+        totalUsers: await User.countDocuments(),
+        totalDoctors: await User.countDocuments({ role: 'doctor' }),
+        totalPatients: await User.countDocuments({ role: 'patient' }),
+        totalEmployees: await User.countDocuments({ role: 'employee' }),
+        totalAppointments: await Appointment.countDocuments(),
+        pendingAppointments: await Appointment.countDocuments({ status: 'scheduled' }),
+        todayAppointmentsCount: await Appointment.countDocuments({ date: { $gte: today, $lt: tomorrow } })
+      };
+
+      dashboardData.recentAppointments = await Appointment.find()
+        .populate('patient_id', 'profile.fullName')
+        .populate('doctor_Id', 'profile.fullName')
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .lean();
+
+    } else if (userRole === 'doctor') {
+      dashboardData.stats = {
+        myAppointments: await Appointment.countDocuments({ doctor_Id: userId }),
+        myPendingAppointments: await Appointment.countDocuments({ doctor_Id: userId, status: 'scheduled' }),
+        myCompletedAppointments: await Appointment.countDocuments({ doctor_Id: userId, status: 'completed' }),
+        myTodayAppointments: await Appointment.countDocuments({ doctor_Id: userId, date: { $gte: today, $lt: tomorrow } })
+      };
+
+      dashboardData.myAppointments = await Appointment.find({ doctor_Id: userId, status: 'scheduled' })
+        .populate('patient_id', 'profile.fullName profile.cpr profile.phone')
+        .sort({ date: 1, time: 1 })
+        .limit(10)
+        .lean();
+
+    } else if (userRole === 'employee') {
+      dashboardData.stats = {
+        totalAppointments: await Appointment.countDocuments(),
+        pendingAppointments: await Appointment.countDocuments({ status: 'scheduled' }),
+        todayAppointmentsCount: await Appointment.countDocuments({ date: { $gte: today, $lt: tomorrow } }),
+        totalDoctors: await User.countDocuments({ role: 'doctor' }),
+        totalPatients: await User.countDocuments({ role: 'patient' })
+      };
+
+      dashboardData.recentAppointments = await Appointment.find()
+        .populate('patient_id', 'profile.fullName')
+        .populate('doctor_Id', 'profile.fullName')
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .lean();
+    }
+
+    res.render('dashboard/admin', dashboardData);
+    
+  } catch (error) {
+    console.error('Dashboard error:', error);
+    res.status(500).render('error', {
+      message: 'Unable to load dashboard',
+      user: req.session.user
+    });
+  }
 });
 
-router.post('/create-user', isAdmin, authorize('users', 'create'), async (req, res) => {
+// Create User Form
+router.get('/create-user', authorize('users', 'create'), async (req, res) => {
+  try {
+    res.render('admin/create-user', { 
+      user: req.session.user,
+      error: null,
+      formData: {}
+    });
+  } catch (error) {
+    res.redirect('/admin/dashboard');
+  }
+});
+
+// Create User
+router.post('/create-user', authorize('users', 'create'), async (req, res) => {
   try {
     const { username, email, password, confirmPassword, role, fullName, phone, address, department, specialty, cpr } = req.body;
     
-    if (!username || !email || !password || !role) {
-      return res.send('All fields are required');
-    }
-    if (password !== confirmPassword) {
-      return res.send('Password and Confirm Password must match');
+    if (!username || !email || !password || !role || !fullName || !cpr) {
+      return res.render('admin/create-user', {
+        error: 'All fields are required',
+        user: req.session.user,
+        formData: req.body
+      });
     }
     
-    const existing = await User.findOne({ $or: [{ username }, { email }] });
-    if (existing) {
-      return res.send('Username or email already registered');
+    if (password !== confirmPassword) {
+      return res.render('admin/create-user', {
+        error: 'Password and Confirm Password must match',
+        user: req.session.user,
+        formData: req.body
+      });
+    }
+    
+    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+    if (existingUser) {
+      return res.render('admin/create-user', {
+        error: 'Username or email already registered',
+        user: req.session.user,
+        formData: req.body
+      });
     }
     
     const hashedPassword = await bcrypt.hash(password, 10);
     
     const profile = { 
-      fullName: fullName || '', 
-      phone: phone || '', 
-      address: address || '',
-      cpr: cpr || '000000000'
+      fullName: fullName.trim(),
+      phone: phone?.trim() || '',
+      address: address?.trim() || '',
+      cpr: cpr.trim()
     };
     
-    if (role === 'employee') profile.department = department || '';
-    if (role === 'doctor') profile.specialty = specialty || '';
+    if (role === 'employee') profile.department = department?.trim() || '';
+    if (role === 'doctor') profile.specialty = specialty?.trim() || '';
     
     await User.create({ 
-      username, 
-      email, 
+      username: username.trim(), 
+      email: email.trim(), 
       password: hashedPassword, 
       role, 
       profile 
@@ -55,171 +166,106 @@ router.post('/create-user', isAdmin, authorize('users', 'create'), async (req, r
     
     res.redirect('/admin/users');
   } catch (error) {
-    res.send('Error creating user: ' + error.message);
+    res.render('admin/create-user', {
+      error: 'Error creating user',
+      user: req.session.user,
+      formData: req.body
+    });
   }
 });
 
-// User Management Routes
-router.get('/users', isAdmin, authorize('users', 'read'), async (req, res) => {
+// User List
+router.get('/users', authorize('users', 'read'), async (req, res) => {
   try {
-    const users = await User.find();
-    res.render('admin/user-list.ejs', { users });
+    const users = await User.find().sort({ createdAt: -1 });
+    res.render('admin/user-list', { 
+      users,
+      user: req.session.user,
+      success: req.session.success,
+      error: req.session.error
+    });
+    
+    delete req.session.success;
+    delete req.session.error;
   } catch (error) {
-    res.redirect('/');
+    res.redirect('/admin/dashboard');
   }
 });
 
-router.get('/edit-user/:userId', isAdmin, authorize('users', 'update'), async (req, res) => {
+// Edit User Form
+router.get('/edit-user/:userId', authorize('users', 'update'), async (req, res) => {
   try {
-    const userId = req.params.userId;
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).send('User not found');
-    }
-    res.render('admin/edit-user', { user });
+    const user = await User.findById(req.params.userId);
+    res.render('admin/edit-user', { 
+      user,
+      error: null,
+      user: req.session.user 
+    });
   } catch (error) {
-    res.status(500).send('Server error');
+    res.redirect('/admin/users');
   }
 });
 
-router.post('/edit-user/:userId', isAdmin, authorize('users', 'update'), async (req, res) => {
+// Update User
+router.post('/edit-user/:userId', authorize('users', 'update'), async (req, res) => {
   try {
-    const userId = req.params.userId;
     const { username, email, fullName, phone, address, department, specialty } = req.body;
 
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).send('User not found');
+    const user = await User.findById(req.params.userId);
+    
+    const existingUser = await User.findOne({
+      _id: { $ne: req.params.userId },
+      $or: [{ username }, { email }]
+    });
+    
+    if (existingUser) {
+      return res.render('admin/edit-user', {
+        user,
+        error: 'Username or email already taken',
+        user: req.session.user
+      });
     }
 
-    user.username = username;
-    user.email = email;
-    if (!user.profile) user.profile = {};
-    user.profile.fullName = fullName;
-    user.profile.phone = phone;
-    user.profile.address = address;
+    user.username = username.trim();
+    user.email = email.trim();
+    user.profile.fullName = fullName.trim();
+    user.profile.phone = phone?.trim() || '';
+    user.profile.address = address?.trim() || '';
+    
     if (user.role === 'employee') {
-      user.profile.department = department;
+      user.profile.department = department?.trim() || '';
     } else if (user.role === 'doctor') {
-      user.profile.specialty = specialty;
+      user.profile.specialty = specialty?.trim() || '';
     }
 
     await user.save();
     res.redirect('/admin/users');
   } catch (error) {
-    res.status(500).send('Error updating user');
+    res.render('admin/edit-user', {
+      user: await User.findById(req.params.userId),
+      error: 'Error updating user',
+      user: req.session.user
+    });
   }
 });
 
-router.post('/delete-user/:userId', isAdmin, authorize('users', 'delete'), async (req, res) => {
+// Delete User
+router.post('/delete-user/:userId', authorize('users', 'delete'), async (req, res) => {
   try {
-    const userId = req.params.userId;
-
-    const deletedUser = await User.findByIdAndDelete(userId);
-    if (!deletedUser) {
-      return res.status(404).send('User not found');
+    if (req.params.userId === req.session.user._id.toString()) {
+      req.session.error = 'Cannot delete your own account';
+      return res.redirect('/admin/users');
     }
 
+    await User.findByIdAndDelete(req.params.userId);
+    req.session.success = 'User deleted successfully';
     res.redirect('/admin/users');
   } catch (error) {
-    res.status(500).send('Error deleting user');
+    req.session.error = 'Error deleting user';
+    res.redirect('/admin/users');
   }
 });
 
-// Dashboard Routes
-router.get('/dashboard', async (req, res) => {
-  const role = req.session.user?.role;
 
-  try {
-    if (role === 'doctor') {
-      const doctor_Id = req.session.user._id;
-
-      const appointments = await Appointment.find({
-        doctor_Id: doctor_Id,
-        status: { $in: ['scheduled', 'completed'] }
-      })
-      .populate('patient_id')
-      .populate('doctor_Id')
-      .lean();
-
-      const mappedAppointments = appointments.map(app => {
-        return {
-          _id: app._id,
-          date: app.date,
-          time: app.time,
-          status: app.status,
-          prescription: app.prescription,
-          patientName: app.patient_id?.profile?.fullName || 'No Name',
-          patientCPR: app.patient_id?.profile?.cpr || 'No CPR',
-          patientPhone: app.patient_id?.profile?.phone || 'No Phone'
-        };
-      });
-
-      return res.render('dashboard/doctor', {
-        user: req.session.user,
-        appointments: mappedAppointments
-      });
-    }
-    if (role === 'admin') {
-      return res.render('dashboard/admin', { user: req.session.user });
-    }
-    if (role === 'employee') {
-      return res.render('dashboard/employee', { user: req.session.user });
-    }
-    if (role === 'patient') {
-      const appointments = await Appointment.find({ patient_id: req.session.user._id });
-      return res.render('appointments/index', { user: req.session.user, appointments });
-    }
-    return res.status(403).send('Access denied');
-  } catch (error) {
-    res.status(500).send('Internal server error');
-  }
-});
-
-// Doctor Dashboard Route
-router.get('/doctor', async (req, res) => {
-  try {
-    if (req.session.user?.role !== 'doctor') {
-      return res.status(403).send('Access denied - Doctors only');
-    }
-    
-    const doctor_Id = req.session.user._id;
-
-    const appointments = await Appointment.find({
-      doctor_Id: doctor_Id,
-      status: { $in: ['scheduled', 'completed'] }
-    })
-    .populate('patient_id')
-    .populate('doctor_Id')
-    .lean();
-
-    const mappedAppointments = appointments.map(app => {
-      return {
-        _id: app._id,
-        date: app.date,
-        time: app.time,
-        status: app.status,
-        prescription: app.prescription,
-        patientName: app.patient_id?.profile?.fullName || 'No Name',
-        patientCPR: app.patient_id?.profile?.cpr || 'No CPR',
-        patientPhone: app.patient_id?.profile?.phone || 'No Phone'
-      };
-    });
-
-    return res.render('dashboard/doctor', {
-      user: req.session.user,
-      appointments: mappedAppointments
-    });
-  } catch (error) {
-    res.status(500).send('Server error');
-  }
-});
-
-router.get('/employee', (req, res) => {
-  if (!req.session.user) {
-    return res.redirect('/auth/sign-in');
-  }
-  res.render('dashboard/employee', { user: req.session.user });
-});
 
 module.exports = router;

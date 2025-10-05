@@ -3,39 +3,36 @@ const router = express.Router();
 
 const Availability = require('../models/availability');
 const authorize = require('../middleware/authorize');
-const User = require('../models/user')
+const User = require('../models/user');
 
-// GET /availabilitys - List all availabilities for current user
+// List all availabilities
 router.get('/', authorize('availabilitys', 'read'), async (req, res) => {
   try {
     const availabilitys = await Availability.find()
       .populate('doctorId', 'profile.fullName')
       .lean();
 
-    res.render('availabilitys/index.ejs', { availabilitys });
+    res.render('availabilitys/index', { availabilitys });
   } catch (error) {
-    console.error(error);
     res.redirect('/');
   }
 });
 
+// New availability form
 router.get('/new', authorize('availabilitys', 'create'), async (req, res) => {
   try {
     const doctors = await User.find({ role: 'doctor' }).select('profile.fullName').lean();
-    res.render('availabilitys/new.ejs', { doctors, availability: {} }); 
+    res.render('availabilitys/new', { doctors, availability: {} }); 
   } catch (error) {
-    console.error(error);
     res.redirect('/availabilitys');
   }
 });
 
+// Create availability
 router.post('/', authorize('availabilitys', 'create'), async (req, res) => {
   try {
     const { date, openingTime, closingTime, duration, doctorId, breakStartTime, breakEndTime, isRepeating } = req.body;
-    
-    console.log('Form data received:', req.body);
 
-    // Check if availability already exists for this DOCTOR and date
     const existingAvailability = await Availability.findOne({
       doctorId: doctorId,
       date: date
@@ -48,7 +45,6 @@ router.post('/', authorize('availabilitys', 'create'), async (req, res) => {
       return res.render('availabilitys/new', {
         doctors: doctors,
         error: `Doctor ${selectedDoctor?.profile.fullName} already has an availability scheduled for ${new Date(date).toDateString()}. Please edit the existing one or choose a different date/doctor.`,
-        // Pass back form data to preserve user input
         date: date,
         openingTime: openingTime,
         closingTime: closingTime,
@@ -60,7 +56,6 @@ router.post('/', authorize('availabilitys', 'create'), async (req, res) => {
       });
     }
 
-    // Process break times from simple fields
     let breakTimesArray = [];
     if (breakStartTime && breakEndTime) {
       breakTimesArray = [{
@@ -83,15 +78,11 @@ router.post('/', authorize('availabilitys', 'create'), async (req, res) => {
     await newAvailability.save();
     res.redirect('/availabilitys');
   } catch (error) {
-    console.error('Error creating availability:', error);
-    
-    // Handle duplicate key error specifically
     if (error.code === 11000) {
       const doctors = await User.find({ role: 'doctor' }).select('profile.fullName').lean();
       return res.render('availabilitys/new', {
         doctors: doctors,
         error: `This availability conflicts with an existing one. Please choose a different date or doctor.`,
-        // Pass back form data
         date: req.body.date,
         openingTime: req.body.openingTime,
         closingTime: req.body.closingTime,
@@ -107,6 +98,7 @@ router.post('/', authorize('availabilitys', 'create'), async (req, res) => {
   }
 });
 
+// Edit availability form
 router.get('/:availabilityId/edit', authorize('availabilitys', 'update'), async (req, res) => {
   try {
     const availability = await Availability.findById(req.params.availabilityId);
@@ -116,18 +108,17 @@ router.get('/:availabilityId/edit', authorize('availabilitys', 'update'), async 
     const doctors = await User.find({ role: 'doctor' }).select('profile.fullName').lean();
     res.render('availabilitys/edit', { availability, doctors });
   } catch (error) {
-    console.error(error);
     res.redirect('/availabilitys');
   }
 });
 
+// Update availability
 router.put('/:availabilityId', authorize('availabilitys', 'update'), async (req, res) => {
   try {
     const availability = await Availability.findById(req.params.availabilityId);
     if (!availability) {
       return res.status(404).send('Availability not found');
     }
-
 
     availability.date = req.body.date;
     availability.openingTime = req.body.openingTime;
@@ -136,7 +127,6 @@ router.put('/:availabilityId', authorize('availabilitys', 'update'), async (req,
     availability.doctorId = req.body.doctorId;
     availability.isRepeating = req.body.isRepeating === 'on';
 
-    
     if (req.body.breakStartTime && req.body.breakEndTime) {
       availability.breakTimes = [{
         startTime: req.body.breakStartTime,
@@ -149,21 +139,16 @@ router.put('/:availabilityId', authorize('availabilitys', 'update'), async (req,
     await availability.save();
     res.redirect('/availabilitys');
   } catch (error) {
-    console.error('Error updating availability:', error);
     res.redirect(`/availabilitys/${req.params.availabilityId}/edit`);
   }
 });
 
+// Delete availability
 router.delete('/:availabilityId', authorize('availabilitys', 'delete'), async (req, res) => {
   try {
-    const availability = await Availability.findById(req.params.availabilityId);
-    if (!availability) {
-      return res.status(404).send('Availability not found');
-    }
-    await availability.deleteOne();
+    await Availability.findByIdAndDelete(req.params.availabilityId);
     res.redirect('/availabilitys');
   } catch (error) {
-    console.log(error);
     res.redirect('/availabilitys');
   }
 });
