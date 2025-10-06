@@ -4,49 +4,70 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Add Prescription</title>
-   <link rel="stylesheet" href="/stylesheets/style.css">
+  <link rel="stylesheet" href="/stylesheets/style.css">
 </head>
 <body>
   <%- include('../partials/_navbar.ejs') %>
   
-  <main>
+  <main class="container">
     <h1>Add Prescription</h1>
     
     <% if (typeof error !== 'undefined' && error) { %>
-      <p style="color: red;"><%= error %></p>
+      <div class="alert alert-error">
+        <%= error %>
+      </div>
     <% } %>
 
-    <div>
-      <h3>Patient: <%= appointment.patient_id.profile.fullName %></h3>
-      <p>CPR: <%= appointment.patient_id.profile.cpr %></p>
-      <p>Doctor: <%= appointment.doctor_Id.profile.fullName %></p>
-      <p>Date: <%= appointment.date.toDateString() %> at <%= appointment.time %></p>
+    <!-- Prescription Header Section -->
+    <div class="patient-info">
+      <h3>Prescription Details</h3>
+      <div class="patient-info-grid">
+        <div class="info-item">
+          <strong>Patient:</strong> <%= appointment.patient_id.profile.fullName %>
+        </div>
+        <div class="info-item">
+          <strong>CPR:</strong> <%= appointment.patient_id.profile.cpr %>
+        </div>
+        <div class="info-item">
+          <strong>Doctor:</strong> <%= appointment.doctor_Id.profile.fullName %>
+        </div>
+        <div class="info-item">
+          <strong>Date:</strong> <%= appointment.date.toDateString() %> at <%= appointment.time %>
+        </div>
+      </div>
     </div>
 
+    <!-- Prescription Form -->
     <form method="POST" action="/appointments/<%= appointment._id %>/prescription">
-      <div>
-        <label for="medication">Medication *</label>
-        <input type="text" id="medication" name="medication" required>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="medication">Medication *</label>
+          <input type="text" id="medication" name="medication" required 
+                 placeholder="Enter medication name">
+        </div>
+
+        <div class="form-group">
+          <label for="dosage">Dosage</label>
+          <input type="text" id="dosage" name="dosage" 
+                 placeholder="e.g., 500mg">
+        </div>
+
+        <div class="form-group">
+          <label for="instructions">Instructions</label>
+          <textarea id="instructions" name="instructions" rows="3" 
+                    placeholder="e.g., Take twice daily after meals"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="duration">Duration</label>
+          <input type="text" id="duration" name="duration" 
+                 placeholder="e.g., 7 days">
+        </div>
       </div>
 
-      <div>
-        <label for="dosage">Dosage</label>
-        <input type="text" id="dosage" name="dosage" placeholder="e.g., 500mg">
-      </div>
-
-      <div>
-        <label for="instructions">Instructions</label>
-        <textarea id="instructions" name="instructions" rows="3" placeholder="e.g., Take twice daily after meals"></textarea>
-      </div>
-
-      <div>
-        <label for="duration">Duration</label>
-        <input type="text" id="duration" name="duration" placeholder="e.g., 7 days">
-      </div>
-
-      <div>
-        <button type="submit">Save Prescription</button>
-        <a href="/appointments">Cancel</a>
+      <div class="form-actions">
+        <button type="submit" class="button-primary">Save Prescription</button>
+        <a href="/appointments" class="button button-outline">Cancel</a>
       </div>
     </form>
   </main>

@@ -90,6 +90,7 @@ router.get('/dashboard', authorize('dashboard', 'read'), async (req, res) => {
         .lean();
     }
 
+    
     res.render('dashboard/admin', dashboardData);
     
   } catch (error) {
