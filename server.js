@@ -39,7 +39,7 @@ app.use(
       ttl: 14 * 24 * 60 * 60 
     }),
     cookie: {
-      maxAge: 1000 * 60 * 60 * 24,
+      maxAge: 24 * 60 * 60 * 1000,
       secure: false, 
       httpOnly: true,
     },
